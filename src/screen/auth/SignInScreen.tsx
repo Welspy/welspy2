@@ -27,20 +27,20 @@ const SignInScreen = () => {
             }
             store.hookState.setState({queueSequence: [], hookQueue: []});
         } else if (queueSequence[queueSequence.length -1] == "bank?GET") {
-            console.log(queueSequence);
+            store.userState.setState({bankInfo: hookQueue[0].response.data.data});
             store.hookState.setState({queueSequence: [], hookQueue: []});
         } else if (queueSequence[queueSequence.length -1] == "user?GET") {
-            console.log(queueSequence);
+            store.userState.setState({userInfo: hookQueue[0].response.data.data});
             store.hookState.setState({queueSequence: [], hookQueue: []});
             Welspy.challenge.getMyChallenge();
             Welspy.challenge.getChallengeList(1, 4);
         } else if (queueSequence[queueSequence.length -1] == "room/list/my?GET") {
             if(hookQueue[hookQueue.length-1].isSuccess){
-                console.log(queueSequence);
+                store.challengeState.setState({myChallengeList: hookQueue[0].response.data.data.reverse()});
             }
             store.hookState.setState({queueSequence: [], hookQueue: []});
         } else if (queueSequence[queueSequence.length -1] == "room/list?GET") {
-            console.log(queueSequence);
+            store.challengeState.setState({currentList: [...(hookQueue[0].response.data.data).reverse(), {}]});
             store.hookState.setState({queueSequence: [], hookQueue: []});
             rootNavigation.navigate("rootTab")
         }
