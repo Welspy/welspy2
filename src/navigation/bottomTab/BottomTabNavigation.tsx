@@ -10,7 +10,7 @@ import ProfileStackNavigation from '../stack/MyInfoStackNavigation.tsx';
 
 const BottomTabNavigation = () => {
     return (
-        <Tab.Navigator screenOptions={{headerShown: false}} initialRouteName={'TabMain'}>
+        <Tab.Navigator screenOptions={{headerShown: false}} initialRouteName={'tabMain'}>
             <Tab.Screen name={"tabSearch"} component={SearchChallengeStackNavigation} />
             <Tab.Screen name={"tabChallenge"} component={ChallengeStackNavigation} />
             <Tab.Screen name={"tabMain"} component={MainStackNavigation} />
