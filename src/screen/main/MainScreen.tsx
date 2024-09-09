@@ -13,12 +13,14 @@ import {Height, Width} from '../../config/global/dimensions.ts';
 import store from '../../state/store.ts';
 import ChallengeList from '../../component/challengeList/ChallengeList.tsx';
 import Welspy from '../../hooks/Welspy.ts';
+import {MainStackNavigationType} from '../../type/navigationType/MainStackNavigationType.ts';
 
 
 
 const MainScreen = () => {
 
     const TabNavigation = useNavigation<NavigationProp<BottomTabNavigationType>>();
+    const navigation = useNavigation<NavigationProp<MainStackNavigationType>>();
 
     const {currentList, myChallengeList} = store.challengeState(state => state)
     const {userInfo, bankInfo} = store.userState(state => state)
