@@ -15,6 +15,37 @@ const SignInScreen = () => {
 
     const {hookQueue, queueSequence} = store.hookState(state => state)
 
+    useEffect(() => {
+        if(queueSequence[0] == "auth/sign-in?POST") {
+            console.log(queueSequence);
+            console.log(hookQueue);
+            if(hookQueue[0].isSuccess){
+                store.authState.setState({accessToken : hookQueue[0].response.data.data.accessToken, refreshToken : hookQueue[0].response.data.data.refreshToken});
+                console.log(hookQueue[0].response.data.data.accessToken);
+                Welspy.user.getProfile();
+                Welspy.bank.getMyBank();
+            }
+            store.hookState.setState({queueSequence: [], hookQueue: []});
+        } else if (queueSequence[queueSequence.length -1] == "bank?GET") {
+            console.log(queueSequence);
+            store.hookState.setState({queueSequence: [], hookQueue: []});
+        } else if (queueSequence[queueSequence.length -1] == "user?GET") {
+            console.log(queueSequence);
+            store.hookState.setState({queueSequence: [], hookQueue: []});
+            Welspy.challenge.getMyChallenge();
+            Welspy.challenge.getChallengeList(1, 4);
+        } else if (queueSequence[queueSequence.length -1] == "room/list/my?GET") {
+            if(hookQueue[hookQueue.length-1].isSuccess){
+                console.log(queueSequence);
+            }
+            store.hookState.setState({queueSequence: [], hookQueue: []});
+        } else if (queueSequence[queueSequence.length -1] == "room/list?GET") {
+            console.log(queueSequence);
+            store.hookState.setState({queueSequence: [], hookQueue: []});
+            rootNavigation.navigate("rootTab")
+        }
+    }, [queueSequence]);
+
     return (
         <SafeAreaView style={styles.wrapper}>
             <Image src={"https://i.ibb.co/7tcnc44/Logo-small-2.png"} style={styles.mainLogo} />
