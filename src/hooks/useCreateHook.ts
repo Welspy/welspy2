@@ -17,10 +17,10 @@ const useCustomFetch = async (
         },
     };
 
-    if (method === 'POST') {
-        config.data = params;
-    } else {
+    if (method === 'GET') {
         config.params = params;
+    } else {
+        config.data = params;
     }
 
 
@@ -35,7 +35,7 @@ const useCustomFetch = async (
             store.hookState.setState((state) => ({hookQueue : [...state.hookQueue, {target, isSuccess: true, errorMessage: "", response: res,}], queueSequence: [...state.queueSequence, target+"?"+method]}))
         })
         .catch((err) => {
-            // await console.log(config.url,': [ERR] :',err)
+            console.log(config.url,': [ERR] :',err.response)
             store.hookState.setState((state) => ({hookQueue : [...state.hookQueue, {target, isSuccess: false, errorMessage: err, response: "",}], queueSequence: [...state.queueSequence, target+"?"+method]}))
         })
 };

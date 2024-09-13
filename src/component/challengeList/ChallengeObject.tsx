@@ -1,8 +1,11 @@
-import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
+import {Image, Pressable, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {ChallengeResponseType} from '../../type/responseType/ChallengeResponseType.ts';
 import {Height, Width} from '../../config/global/dimensions.ts';
+import store from '../../state/store.ts';
+import {NavigationProp, useNavigation} from '@react-navigation/native';
+import {BottomTabNavigationType} from '../../type/navigationType/BottomTabNavigationType.ts';
 
-export const ChallengeObject = ({item} : {item: ChallengeResponseType}) => {
+export const ChallengeObject = ({item, create} : {item: ChallengeResponseType, create: any}) => {
 
     const category = {
         "DIGITAL" : "https://i.ibb.co/DLCp14n/computer.png",
@@ -13,25 +16,72 @@ export const ChallengeObject = ({item} : {item: ChallengeResponseType}) => {
         "ETC" : "https://i.ibb.co/RyYQTbS/dollar.png"
     }
 
+    const navigation = useNavigation();
+
+    const tabNavigation = useNavigation<NavigationProp<BottomTabNavigationType>>();
+
+    const categoriesEnum = {
+        "TRAVEL" : '여행',
+        "DIGITAL" : '디지털',
+        "FASHION" : '패션',
+        "TOYS" : '취미',
+        "INTERIOR" : '인테리어',
+        "ETC" : '기타'
+    }
+
+    const {myChallengeList} = store.challengeState(state => state)
+
     return (
-        <Pressable style={styles.container}>
+        <TouchableOpacity style={styles.container} onPress={() => {
+            if (item.idx) {
+                console.log(myChallengeList.map((item) => {return item.roomId}))
+                if (myChallengeList.map((item) => {return item.roomId}).includes(item.idx)) {
+                    store.challengeState.setState(prev => ({renderMyChallenge: [item, myChallengeList.filter((e => e.roomId == item.idx))[0]]}))
+                    tabNavigation.navigate('tabChallenge')
+                    // console.log("test", item)
+                    // console.log("test1", myChallengeList.filter((e => e.roomId == item.idx)))
+                } else {
+                    store.challengeState.setState(prev => ({renderChallenge: item}))
+                    if (navigation.getState()?.routeNames.includes("mainChallenge")) {
+                        //@ts-ignore
+                        navigation.navigate('mainChallenge')
+                    } else if (navigation.getState()?.routeNames.includes("searchChallenge")) {
+                        //@ts-ignore
+                        navigation.navigate('searchChallenge')
+                    }
+                }
+            } else {
+                if (navigation.getState()?.routeNames.includes("mainChallenge")) {
+                    tabNavigation.navigate('tabSearch')
+                } else {
+                    create();
+                }
+            }
+        }}>
             {item.idx?<>
                 <View style={styles.header}>
                     {/*@ts-ignore*/}
                     <Image style={styles.challengeIcon} src={category[item.category]} />
                 </View>
                 <View style={styles.content}>
-                    <Text ellipsizeMode={"tail"} numberOfLines={1} style={styles.titleText}>{item.title}</Text>
-                    <Text ellipsizeMode={"tail"} numberOfLines={1} style={styles.descriptionText}>{item.description}</Text>
+                    <Text ellipsizeMode={"tail"} numberOfLines={1} style={styles.titleText}>{item.title?.split("|//+**+//|")[0]}</Text>
+                    <Text ellipsizeMode={"tail"} numberOfLines={1} style={styles.descriptionText}>{item.description?.split("|//+**+//|")[0]}</Text>
                     <Text style={styles.goalMoneyText}>{`${item.goalAmount}원`}</Text>
                 </View>
                 <View style={styles.footer}>
                     <View style={styles.memberLimitText}>
-                        <Text style={{fontSize: Width/32, color: "#538eff"}}>{`${0}명 참여`}</Text>
+                        {/*@ts-ignore*/}
+                        <Text style={{fontSize: Width/32, color: "#538eff"}}>{categoriesEnum[item.category]}</Text>
                     </View>
                 </View>
-            </> : <Text style={styles.createText}>방 생성하기</Text>}
-        </Pressable>
+            </> : <>
+                {
+                    navigation.getState()?.routeNames.includes("mainChallenge") ?
+                        <Text onPress={()=>{tabNavigation.navigate('tabSearch')}} style={styles.createText}>더 많은 챌린지 보러가기!</Text> : <Text onPress={() =>{create()}} style={styles.createText}>방 생성하기</Text>
+                }
+            </>
+            }
+        </TouchableOpacity>
     );
 }
 
@@ -86,7 +136,7 @@ const styles = StyleSheet.create({
         paddingVertical: Height / 50,
     },
     createText: {
-        fontSize: Width / 25,
+        fontSize: Width / 24,
         fontWeight: "500",
         opacity: 0.6,
         alignSelf: "center",

@@ -3,7 +3,7 @@ import ProfileScreen from '../../screen/myInfo/ProfileScreen.tsx';
 
 const ProfileStackNavigation = () => {
     return (
-        <Stack.Navigator initialRouteName="profileProfile">
+        <Stack.Navigator initialRouteName="profileProfile" screenOptions={{ headerShown: false }}>
             <Stack.Screen name={"profileProfile"} component={ProfileScreen} />
         </Stack.Navigator>
     )

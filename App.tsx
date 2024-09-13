@@ -13,6 +13,10 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 if (Platform.OS === 'ios' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
+import { LogBox } from 'react-native';
+
+LogBox.ignoreAllLogs(true);
+
 
 function App() {
   return (

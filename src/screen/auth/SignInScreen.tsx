@@ -1,53 +1,70 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, TextInput, TouchableOpacity, Image, StyleSheet, SafeAreaView, Button} from 'react-native';
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    Image,
+    StyleSheet,
+    SafeAreaView,
+    Button,
+    KeyboardAvoidingView,
+} from 'react-native';
 import Welspy from '../../hooks/Welspy.ts';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 import {AuthStackNavigationType} from '../../type/navigationType/AuthStackNavigationType.ts';
 import store from '../../state/store.ts';
 import {RootStackNavigationType} from '../../type/navigationType/RootStackNavigationType.ts';
+import {BottomTabNavigationType} from '../../type/navigationType/BottomTabNavigationType.ts';
 
 const SignInScreen = () => {
     const navigation = useNavigation<NavigationProp<AuthStackNavigationType>>();
     const rootNavigation = useNavigation<NavigationProp<RootStackNavigationType>>();
-
     const [email, setEmail] = useState('');
+
     const [password, setPassword] = useState('');
 
     const {hookQueue, queueSequence} = store.hookState(state => state)
+    const {isReadyGetFull} = store.challengeState(state => state)
+
+
 
     useEffect(() => {
         if(queueSequence[0] == "auth/sign-in?POST") {
-            console.log(queueSequence);
-            console.log(hookQueue);
             if(hookQueue[0].isSuccess){
                 store.authState.setState({accessToken : hookQueue[0].response.data.data.accessToken, refreshToken : hookQueue[0].response.data.data.refreshToken});
                 console.log(hookQueue[0].response.data.data.accessToken);
                 Welspy.user.getProfile();
                 Welspy.bank.getMyBank();
+                Welspy.challenge.getMyChallenge(1);
+                !isReadyGetFull && Welspy.challenge.getChallengeList(1, 4);
             }
             store.hookState.setState({queueSequence: [], hookQueue: []});
         } else if (queueSequence[queueSequence.length -1] == "bank?GET") {
+            console.log(hookQueue[0].response.data.data);
             store.userState.setState({bankInfo: hookQueue[0].response.data.data});
             store.hookState.setState({queueSequence: [], hookQueue: []});
         } else if (queueSequence[queueSequence.length -1] == "user?GET") {
-            store.userState.setState({userInfo: hookQueue[0].response.data.data});
+            store.userState.setState({userInfo: hookQueue[0]?.response?.data?.data});
             store.hookState.setState({queueSequence: [], hookQueue: []});
-            Welspy.challenge.getMyChallenge();
-            Welspy.challenge.getChallengeList(1, 4);
         } else if (queueSequence[queueSequence.length -1] == "room/list/my?GET") {
             if(hookQueue[hookQueue.length-1].isSuccess){
-                store.challengeState.setState({myChallengeList: hookQueue[0].response.data.data.reverse()});
+                store.challengeState.setState({myChallengeList: hookQueue[0].response.data.data});
             }
             store.hookState.setState({queueSequence: [], hookQueue: []});
         } else if (queueSequence[queueSequence.length -1] == "room/list?GET") {
-            store.challengeState.setState({currentList: [...(hookQueue[0].response.data.data).reverse(), {}]});
-            store.hookState.setState({queueSequence: [], hookQueue: []});
+            if(!isReadyGetFull) {
+                store.challengeState.setState({currentList: [...(hookQueue[0].response.data.data),{}]});
+                store.hookState.setState({queueSequence: [], hookQueue: []});
+                store.challengeState.setState({currentChallengeIdx: hookQueue[0].response.data.data[0]?.idx});
+            }
             rootNavigation.navigate("rootTab")
         }
     }, [queueSequence]);
 
     return (
         <SafeAreaView style={styles.wrapper}>
+            <KeyboardAvoidingView behavior={"position"}>
             <Image src={"https://i.ibb.co/7tcnc44/Logo-small-2.png"} style={styles.mainLogo} />
             <Text style={styles.title}>로그인</Text>
             <TextInput
@@ -66,11 +83,6 @@ const SignInScreen = () => {
                     Welspy.auth.signIn({email, password : event.nativeEvent.text});
                 }}
             />
-            <View style={styles.searchWrapper}>
-                <TouchableOpacity>
-                    <Text style={styles.searchId}>아이디 찾기</Text>
-                </TouchableOpacity>
-            </View>
             <TouchableOpacity style={styles.loginBtn} onPress={() => {
                 Welspy.auth.signIn({email, password});
             }}>
@@ -82,6 +94,7 @@ const SignInScreen = () => {
                     <Text style={styles.guidePhrase2}>회원가입하기</Text>
                 </TouchableOpacity>
             </View>
+            </KeyboardAvoidingView>
             <Button title={"바로 로그인"} onPress={() => {Welspy.auth.signIn({email : "test@test", password : "1234"})}}/>
         </SafeAreaView>
     );
@@ -95,14 +108,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     mainLogo: {
-        width: "34%",
-        height: "17%",
+        width: "45%",
+        height: "23%",
         resizeMode: 'contain',
+        alignSelf: 'center',
     },
     title: {
-        fontSize: 40,
-        fontWeight: '600',
+        fontSize: 32,
+        fontWeight: '900',
         marginTop: 21,
+        marginBottom: 80,
+        alignSelf: 'center'
     },
     input: {
         width: 333,
@@ -110,7 +126,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         borderRadius: 10,
         paddingLeft: 17,
-        marginTop: 21,
+        marginTop: 15,
         borderWidth: 1,
         borderColor: '#ccc',
         color: '#000',
@@ -134,11 +150,11 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 13,
+        marginTop: 40,
     },
     loginBtnText: {
-        fontSize: 20,
-        fontWeight: '600',
+        fontSize: 16,
+        fontWeight: '400',
         color: 'white',
     },
     guideWrapper: {

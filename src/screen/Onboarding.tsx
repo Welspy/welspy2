@@ -9,7 +9,6 @@ const OnBoarding = ({navigation} : {navigation : NavigationProp<AuthStackNavigat
         src={'https://i.ibb.co/7tcnc44/Logo-small-2.png'}
         style={styles.mainLogo}
       />
-      <Text style={styles.title}>금융에 챌린지를 더하다</Text>
       <Text style={styles.appTitle}>Welspy</Text>
       <TouchableOpacity style={styles.loginBtn} onPress={() => {navigation.navigate("authSignIn")}}>
         <Text style={styles.loginBtnText}>로그인</Text>
@@ -38,16 +37,12 @@ const styles = StyleSheet.create({
     height: 152,
     resizeMode: 'contain',
   },
-  title: {
-    fontSize: 25,
-    fontWeight: '600',
-    marginTop: 25,
-  },
   appTitle: {
     fontSize: 45,
     fontWeight: '700',
     color: '#5892ff',
-    marginTop: 8,
+    marginTop: 20,
+    marginBottom: 10,
   },
   loginBtn: {
     width: 333,
@@ -59,12 +54,12 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   loginBtnText: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '400',
     color: 'white',
   },
   guideWrapper: {
-    width: 333,
+    width: 328,
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',

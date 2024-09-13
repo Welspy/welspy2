@@ -7,10 +7,11 @@ import MainStackNavigation from '../stack/MainStackNavigation.tsx';
 import SearchChallengeStackNavigation from '../stack/SearchChallengeStackNavigation.tsx';
 import ChallengeStackNavigation from '../stack/ChallengeStackNavigation.tsx';
 import ProfileStackNavigation from '../stack/MyInfoStackNavigation.tsx';
+import store from '../../state/store.ts';
 
 const BottomTabNavigation = () => {
     return (
-        <Tab.Navigator screenOptions={{headerShown: false}} initialRouteName={'tabMain'}>
+        <Tab.Navigator screenOptions={{headerShown: false, tabBarStyle: {height: store.navigationState(state => state).isBottomTabVisible ? "10%" : "0%"}}} initialRouteName={'tabMain'}>
             <Tab.Screen name={"tabSearch"} component={SearchChallengeStackNavigation} />
             <Tab.Screen name={"tabChallenge"} component={ChallengeStackNavigation} />
             <Tab.Screen name={"tabMain"} component={MainStackNavigation} />

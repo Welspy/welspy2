@@ -14,6 +14,8 @@ import store from '../../state/store.ts';
 import ChallengeList from '../../component/challengeList/ChallengeList.tsx';
 import Welspy from '../../hooks/Welspy.ts';
 import {MainStackNavigationType} from '../../type/navigationType/MainStackNavigationType.ts';
+import {useEffect, useState} from 'react';
+import BannerFlatList from '../../component/BannerFlatList.tsx';
 
 
 
@@ -22,18 +24,37 @@ const MainScreen = () => {
     const TabNavigation = useNavigation<NavigationProp<BottomTabNavigationType>>();
     const navigation = useNavigation<NavigationProp<MainStackNavigationType>>();
 
-    const {currentList, myChallengeList} = store.challengeState(state => state)
+    const {currentList, myChallengeList, isReadyGetFull, bankList} = store.challengeState(state => state)
     const {userInfo, bankInfo} = store.userState(state => state)
+
+    const [renderBankList, setRenderBankList] = useState<number[]>([0]);
+
+    useEffect(() => {
+        if(bankList[0]) {
+          setRenderBankList(bankList?.map(item => item?.balance));
+        }
+    }, [bankList]);
+
+    useEffect(() => {
+        if (!isReadyGetFull){
+          Welspy.challenge.getMyChallenge(1);
+          Welspy.user.getProfile();
+          Welspy.bank.getMyBank();
+          Welspy.challenge.getChallengeList(1, 4);
+        }
+    }, [])
 
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView
                 onMomentumScrollEnd={(event) => {
                     if(!event.nativeEvent.contentOffset.y) {
-                        Welspy.challenge.getMyChallenge()
-                        Welspy.user.getProfile()
-                        Welspy.bank.getMyBank()
-                        Welspy.challenge.getChallengeList(1, 4)
+                        if (!isReadyGetFull) {
+                          Welspy.challenge.getMyChallenge(1);
+                          Welspy.user.getProfile();
+                          Welspy.bank.getMyBank();
+                          Welspy.challenge.getChallengeList(1, 4);
+                        }
                     }
                 }}
             >
@@ -46,30 +67,30 @@ const MainScreen = () => {
                         </View>
                     </View>
                     <View style={styles.bannerContainer}>
-
+                        <BannerFlatList images={["https://i.ibb.co/qY0L8HJ/Frame-1-2.jpg", "https://i.ibb.co/J72tVN7/Frame-3-1.jpg", "https://i.ibb.co/HrQ7Xfm/Frame-2-1.jpg"]}/>
                     </View>
                     <View style={styles.bankContainer}>
-                        <Text style={styles.bankTitle}>{userInfo.name != undefined && `${userInfo.name}님`}</Text>
+                        <Text style={styles.bankTitle}>{userInfo?.name != undefined && `${userInfo?.name}님`}</Text>
                         <View style={styles.bankRow}>
                             <View style={[styles.bankRow, {width: "60%", justifyContent: "flex-start"}]}>
                                 <Image src={"https://i.ibb.co/BP2TRGy/Frame-88.jpg"} style={{width: "18%", height: Height/26, marginRight: "6%", marginTop: "2.5%"}}/>
                                 <View>
                                     <Text style={styles.bankText}>신한은행</Text>
-                                    <Text style={styles.balanceText}>{bankInfo.balance != undefined && `${bankInfo.balance}원`}</Text>
+                                    <Text style={styles.balanceText}>{bankInfo.balance != undefined && `${bankInfo.balance - renderBankList.reduce((a,b) => a+b)}원`}</Text>
                                 </View>
                             </View>
-                            <TouchableOpacity style={styles.bankButton}>
+                            <TouchableOpacity style={styles.bankButton} onPress={() => {navigation.navigate('mainSend')}}>
                                 <Text style={styles.bankButtonText}>결제</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
-                    <TouchableOpacity style={[styles.challengeInfoContainer]}>
-                        <Text style={styles.challengeText}>{`나의 챌린지 `}</Text>
+                    <TouchableOpacity style={[styles.challengeInfoContainer]} onPress={() => TabNavigation.navigate('tabChallenge')}>
+                        <Text style={styles.challengeText}>{`🏆 나의 챌린지 `}</Text>
                         <Text style={[styles.challengeText, {color: "#538eff", fontWeight: "600"}]}>{myChallengeList.length}</Text>
                         <Text style={styles.challengeText}>{`건`}</Text>
-                        <Text style={[styles.challengeText , {width: "68%", textAlign: "right", fontSize: Width/15, color: "#538eff"}]}>›</Text>
+                        <Text style={[styles.challengeText , {width: "61%", textAlign: "right", fontSize: Width/15, color: "#538eff"}]}>›</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.challengeInfoContainer]} onPress={() => {}}>
+                    <TouchableOpacity style={[styles.challengeInfoContainer]} onPress={() => {navigation.navigate("mainCreate")}}>
                         <Text style={styles.challengeText}>{`챌린지 만들기`}</Text>
                         <Text style={[styles.challengeText , {width: "72%", textAlign: "right", fontSize: Width/19, color: "#538eff"}]}>+</Text>
                     </TouchableOpacity>
@@ -77,7 +98,7 @@ const MainScreen = () => {
                         모집중인 챌린지
                     </Text>
                     <View style={styles.challengeContainer}>
-                        <ChallengeList styles={styles.challengeListContainer} renderItem={currentList}></ChallengeList>
+                        <ChallengeList create={() => {navigation.navigate('mainCreate')}} styles={styles.challengeListContainer} renderItem={currentList}></ChallengeList>
                     </View>
                 </View>
             </ScrollView>
@@ -93,7 +114,7 @@ const styles = StyleSheet.create({
     scrollContainer: {
         width: '100%',
         alignItems: 'center',
-        height: Height*1.3,
+        height: Height*1.35,
     },
     headerContainer: {
         flexDirection: 'row',
@@ -113,7 +134,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         shadowColor: '#000',
         width: '90%',
-        height: "12%",
+        height: "10%",
         marginBottom: "3%"
     },
     bankContainer: {
@@ -130,13 +151,12 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.05,
         shadowColor: "#000",
         justifyContent: 'space-between',
-        height: "14.5%",
+        height: "13.5%",
         width: '90%',
     },
     bankTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: '2%',
     },
     bankRow: {
         flexDirection: 'row',
@@ -145,16 +165,16 @@ const styles = StyleSheet.create({
         height: '52%',
         alignItems: 'center',
         alignSelf: 'center',
-        marginTop: "-2%",
+        marginTop: "-4.5%",
     },
     bankText: {
         fontSize: 14,
         color: '#333',
     },
     balanceText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#333',
+        fontSize: 15,
+        fontWeight: '500',
+        color: '#000000',
         marginBottom: '-15%',
     },
     bankButton: {
@@ -164,7 +184,7 @@ const styles = StyleSheet.create({
         width: '24.5%',
         height: '65%',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         borderRadius: 5,
     },
     bankButtonText: {

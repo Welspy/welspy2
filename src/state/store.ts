@@ -3,12 +3,16 @@ import {HookStateType} from '../type/storeType/HookStateType.ts';
 import {AuthStateType} from '../type/storeType/AuthStateType.ts';
 import {UserStateType} from '../type/storeType/UserStateType.ts';
 import {ChallengeStateType} from '../type/storeType/ChallengeStateType.ts';
+import {ChallengeItemStateType} from '../type/storeType/ChallengeItemStateType.ts';
+import {NavigationStateType} from '../type/storeType/NavigationStateType.ts';
 
 interface StoreType {
     hookState: UseBoundStore<StoreApi<HookStateType>>;
     authState: UseBoundStore<StoreApi<AuthStateType>>
     userState: UseBoundStore<StoreApi<UserStateType>>
     challengeState: UseBoundStore<StoreApi<ChallengeStateType>>
+    challengeItemState: UseBoundStore<StoreApi<ChallengeItemStateType>>
+    navigationState: UseBoundStore<StoreApi<NavigationStateType>>
 }
 
 const store = {
@@ -29,6 +33,19 @@ const store = {
         currentList: [],
         myChallengeList: [],
         renderChallenge: {},
+        renderMyChallenge: [{},{}],
+        currentChallengeIdx: "",
+        fullChallengeList: [],
+        isReadyGetFull: false,
+        userList: [],
+        bankList: [],
+        
+    })),
+    challengeItemState : create<ChallengeItemStateType>(() => ({
+        itemList: []
+    })),
+    navigationState : create<NavigationStateType>(() => ({
+        isBottomTabVisible: true
     }))
 }
 

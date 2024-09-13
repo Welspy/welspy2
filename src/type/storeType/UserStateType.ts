@@ -5,6 +5,6 @@ import {BankResponseType} from '../responseType/BankResponseType.ts';
 
 export interface UserStateType {
     userInfo: UserResponseType;
-    challengeInfo: MyChallengeResponseType;[];
+    challengeInfo: MyChallengeResponseType[];
     bankInfo: BankResponseType;
 }
