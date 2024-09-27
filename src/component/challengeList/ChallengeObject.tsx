@@ -1,10 +1,11 @@
-import {Image, Pressable, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {ChallengeResponseType} from '../../type/responseType/ChallengeResponseType.ts';
 import {Height, Width} from '../../config/global/dimensions.ts';
 import store from '../../state/store.ts';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 import {BottomTabNavigationType} from '../../type/navigationType/BottomTabNavigationType.ts';
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 export const ChallengeObject = ({item, create} : {item: ChallengeResponseType, create: any}) => {
 
     const category = {
@@ -33,19 +34,21 @@ export const ChallengeObject = ({item, create} : {item: ChallengeResponseType, c
 
     return (
         <TouchableOpacity style={styles.container} onPress={() => {
-            if (item.idx) {
+            if (item.roomId) {
                 console.log(myChallengeList.map((item) => {return item.roomId}))
-                if (myChallengeList.map((item) => {return item.roomId}).includes(item.idx)) {
-                    store.challengeState.setState(prev => ({renderMyChallenge: [item, myChallengeList.filter((e => e.roomId == item.idx))[0]]}))
+                if (myChallengeList.map((item) => {return item.roomId}).includes(item.roomId)) {
+                    store.challengeState.setState({renderMyChallenge: [item, myChallengeList.filter((e => e.roomId == item.roomId))[0]]})
                     tabNavigation.navigate('tabChallenge')
                     // console.log("test", item)
                     // console.log("test1", myChallengeList.filter((e => e.roomId == item.idx)))
                 } else {
-                    store.challengeState.setState(prev => ({renderChallenge: item}))
+                    store.challengeState.setState(({renderChallenge: item}))
                     if (navigation.getState()?.routeNames.includes("mainChallenge")) {
-                        //@ts-ignore
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        //@ts-expect-error
                         navigation.navigate('mainChallenge')
                     } else if (navigation.getState()?.routeNames.includes("searchChallenge")) {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         //@ts-ignore
                         navigation.navigate('searchChallenge')
                     }
@@ -58,18 +61,20 @@ export const ChallengeObject = ({item, create} : {item: ChallengeResponseType, c
                 }
             }
         }}>
-            {item.idx?<>
+            {item.roomId?<>
                 <View style={styles.header}>
+                    {/*eslint-disable-next-line @typescript-eslint/ban-ts-comment*/}
                     {/*@ts-ignore*/}
-                    <Image style={styles.challengeIcon} src={category[item.category]} />
+                    <Image style={styles.challengeIcon} src={`${category[item?.category]}`}/>
                 </View>
                 <View style={styles.content}>
                     <Text ellipsizeMode={"tail"} numberOfLines={1} style={styles.titleText}>{item.title?.split("|//+**+//|")[0]}</Text>
                     <Text ellipsizeMode={"tail"} numberOfLines={1} style={styles.descriptionText}>{item.description?.split("|//+**+//|")[0]}</Text>
-                    <Text style={styles.goalMoneyText}>{`${item.goalAmount}원`}</Text>
+                    <Text style={styles.goalMoneyText}>{`${(item.goalMoney)?.toLocaleString()}원`}</Text>
                 </View>
                 <View style={styles.footer}>
                     <View style={styles.memberLimitText}>
+                        {/*eslint-disable-next-line @typescript-eslint/ban-ts-comment*/}
                         {/*@ts-ignore*/}
                         <Text style={{fontSize: Width/32, color: "#538eff"}}>{categoriesEnum[item.category]}</Text>
                     </View>
@@ -150,11 +155,11 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     titleText: {
-        fontSize: Width / 24,
-        fontWeight: "700",
+        fontSize: Width / 30,
+        fontWeight: "600",
     },
     descriptionText: {
-        fontSize: Width / 28.2,
+        fontSize: Width / 32,
         fontWeight: "600",
         color: "#6c6c6c",
         marginTop: 1

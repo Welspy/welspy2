@@ -11,12 +11,10 @@ import {
     TouchableOpacity, UIManager,
     View,
 } from 'react-native';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {Height, Width} from '../../config/global/dimensions.ts';
 import store from '../../state/store.ts';
-import {ChallengeItemStateType} from '../../type/storeType/ChallengeItemStateType.ts';
-import {MyChallengeResponseType} from '../../type/responseType/MyChallengeResponseType.ts';
 import {ChallengeResponseType} from '../../type/responseType/ChallengeResponseType.ts';
 //@ts-ignore
 import BottomSheet from 'react-native-gesture-bottom-sheet';
@@ -24,6 +22,7 @@ import {WebView} from 'react-native-webview';
 import Welspy from '../../hooks/Welspy.ts';
 import {ChallengeUserResponseType} from '../../type/responseType/ChallengeUserResponseType.ts';
 import DismissButton from '../../component/DismissButton.tsx';
+import {ChallengeProductResponseType} from "../../type/responseType/ChallengeProductResponseType.ts";
 
 const ChallengeInfoScreen = () => {
 
@@ -37,19 +36,17 @@ const ChallengeInfoScreen = () => {
     }
 
     const [renderItem, setRenderItem] = useState<ChallengeResponseType>()
+    const [renderProductItem, setRenderProductItem] = useState<ChallengeProductResponseType>()
     const [renderUserItem, setRenderUserItem] = useState<ChallengeUserResponseType[]>([])
 
     const {renderChallenge, userList, isReadyGetFull} = store.challengeState(state => state)
     const {hookQueue, queueSequence} = store.hookState(state => state)
+    const {userInfo} = store.userState(state => state)
 
     const BottomSheetRef = useRef<BottomSheet>(null);
 
     const [isScrollEnd, setScrollEnd] = useState(false);
 
-    const date = new Date();
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
 
     const [userAvgGoal, setUserAvgGoal] = useState<number>();
 
@@ -63,38 +60,30 @@ const ChallengeInfoScreen = () => {
     }
 
     useEffect(() => {
-        if (queueSequence[0] === "room/user-list?GET") {
-            console.log("test",hookQueue[0].response?.data)
-            setRenderUserItem(hookQueue[0].response?.data.data)
+        if (queueSequence[0] === "room/member?GET") {
+            setRenderUserItem(hookQueue[0].response?.data?.data)
             store.challengeState.setState({userList: hookQueue[0].response?.data?.data})
             LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
             store.hookState.setState({hookQueue : [], queueSequence : []});
         } else if (queueSequence[0] === "room/join?POST") {
-            console.log(hookQueue[0])
             if(hookQueue[0].isSuccess) {
-                Alert.alert("화이팅!", "챌린지 가입이 완료되었습니다!", [{text: "확인" ,onPress: ()=>{fullNavigation.goBack()}}])
+                Alert.alert(`${userInfo.name}님!`, "챌린지에 가입하시겠습니까?", [{text: "확인" ,onPress: ()=>{fullNavigation.goBack();}}])
+            }
+            store.hookState.setState({hookQueue : [], queueSequence : []});
+        } else if (queueSequence[0] === "product?GET") {
+            console.log("testetstes",hookQueue[0])
+            if(hookQueue[0].isSuccess) {
+                setRenderProductItem(hookQueue[0].response?.data?.data)
             }
             store.hookState.setState({hookQueue : [], queueSequence : []});
         }
     }, [queueSequence]);
 
     useEffect(() => {
-        if(userList[0]) {
-          setUserAvgGoal(
-            Math.round(
-              (userList
-                ?.map(item => item.balance)
-                .reduce((prev, curr) => prev + curr) /
-                (Number(renderItem?.goalAmount) * userList?.length)) *
-                100,
-            ),
-          );
-        }
     }, [userList]);
 
 
     useEffect(() => {
-        // console.log(renderChallenge);
         setRenderItem(renderChallenge);
     }, [renderChallenge]);
 
@@ -102,7 +91,7 @@ const ChallengeInfoScreen = () => {
 
     useEffect(() => {
         store.navigationState.setState({isBottomTabVisible: false})
-        Welspy.challenge.getChallengeUserList(1, 999, Number(renderChallenge?.idx))
+        Welspy.challenge.getChallengeUserList(1, 999, Number(renderChallenge?.roomId))
         return () => {
             store.navigationState.setState({isBottomTabVisible: true})
             Welspy.challenge.getMyChallenge(1)
@@ -112,6 +101,12 @@ const ChallengeInfoScreen = () => {
         }
     },[fullNavigation]);
 
+    useEffect(() => {
+        if(renderItem?.productId) {
+          Welspy.product.getProductById(renderItem?.productId);
+        }
+    }, [renderItem?.productId]);
+
 
 
     return (
@@ -120,8 +115,8 @@ const ChallengeInfoScreen = () => {
                 <BottomSheet ref={BottomSheetRef} height={Height/1.08} hasDraggableIcon>
                     <View style={[styles.container, {paddingTop: 10}]}>
                         {/*@ts-ignore*/}
-                        <WebView scrollEnabled={false} source={{uri : renderItem?.description?.split("|//+**+//|")[2]}} style={styles.webView}/>
-                        <TouchableOpacity onPress={() => {Linking.openURL(`${renderItem?.description?.split("|//+**+//|")[2]}`,);}} style={styles.infoBottom} >
+                        <WebView scrollEnabled={false} source={{uri : renderProductItem?.description}} style={styles.webView}/>
+                        <TouchableOpacity onPress={() => {Linking.openURL(`${renderProductItem?.description}`,);}} style={styles.infoBottom} >
                             <Text style={{fontSize: 15, fontWeight: "400"}}>⎋ 링크 바로가기</Text>
                         </TouchableOpacity>
                     </View>
@@ -145,7 +140,7 @@ const ChallengeInfoScreen = () => {
                                     <Text ellipsizeMode={"tail"} style={{color: "#5B94F3", fontWeight: "700", fontSize: 12.75}} numberOfLines={1}>#{categoriesEnum[renderItem?.category]}</Text>
                                 </View>
                                 {
-                                    renderItem?.title?.split("|//+**+//|")[1].split(" ").map((item, index) => (
+                                    renderProductItem?.name.split(" ").map((item, index) => (
                                         <>
                                             {(item == "Apple" || item == "MacBook" || item == "apple" || item == "iPhone" || item == "iphone" || item == "iPad" || item == "iMac" || item == "pods" || item == "맥북" || item == "맥" || item == "아이폰" || item == "기타" || item == "guitar" || item == "piano" || item == "악기"|| item == "요리" || item == "도서") &&
                                               <View key={index} style={styles.memberLimitText}>
@@ -157,35 +152,35 @@ const ChallengeInfoScreen = () => {
                                 }
                             </View>
                             <View style={{flexDirection: 'row'}}>
-                                <Text numberOfLines={1} style={styles.infoTitle}>{renderItem?.title?.split("|//+**+//|")[0]}</Text>
+                                <Text numberOfLines={1} style={styles.infoTitle}>{renderItem?.title}</Text>
                             </View>
-                            <Text style={styles.infoDescription}>{renderItem?.description?.split("|//+**+//|")[0]}</Text>
+                            <Text style={styles.infoDescription}>{renderItem?.description}</Text>
                             {
-                                renderItem?.title?.split("|//+**+//|")[1] != "()()()" ?
+                                renderItem?.title?
                                     <Pressable onPress={() => {BottomSheetRef.current.show()}} style={styles.itemInfoContainer} >
-                                        <Image src={renderItem?.description?.split("|//+**+//|")[1]} style={{width: 100, height: 100, marginRight: 15}}></Image>
+                                        <Image src={renderProductItem?.imageUrl} style={{width: 100, height: 100, marginRight: 15}}></Image>
                                         <View style={{width: '70%', justifyContent: "flex-start"}}>
-                                            <Text style={styles.infoGoalTitle}>{renderItem?.title?.split("|//+**+//|")[1]}</Text>
-                                            <Text style={[styles.infoGoalTitle, {marginTop: 1, fontSize: Width/29}]}>{renderItem?.goalAmount}원</Text>
+                                            <Text style={styles.infoGoalTitle}>{renderProductItem?.name}</Text>
+                                            <Text style={[styles.infoGoalTitle, {marginTop: 1, fontSize: Width/29}]}>{renderItem?.goalMoney}원</Text>
                                             <Text style={[styles.infoGoalTitle, {marginTop: Height/10, marginLeft: Width/2.4, fontSize: Width/38, position: 'absolute', textDecorationLine: 'underline'}]}>자세히보기</Text>
                                         </View>
                                     </Pressable> :
                                     <View style={[styles.itemInfoContainer, {justifyContent: 'center', alignItems: 'center', flexDirection: 'column'}]}>
                                         <Text style={{fontSize: Width/27, fontWeight: "400"}}>목표 물품이 없습니다</Text>
                                         <Text style={{fontSize: Width/27, fontWeight: "400"}}>목표 금액</Text>
-                                        <Text style={{fontSize: Width/19, fontWeight: "600", color: "#538eff"}}>{renderItem.goalAmount}원</Text>
+                                        <Text style={{fontSize: Width/19, fontWeight: "600", color: "#538eff"}}>{renderItem?.goalMoney}원</Text>
                                     </View>
                             }
                             <Text style={[styles.infoSectionTitle, {marginTop: `${isScrollEnd ? 65 : 12}%`}]}></Text>
                             <Text style={styles.infoSectionTitle}>이런 사람들이 도전해요</Text>
-                            <View style={[styles.itemInfoContainer, {height: Height/4.75, flexDirection: "column", shadowOpacity: 0.03}]}>
+                            <View style={[styles.itemInfoContainer, {height: Height/4.75, flexDirection: "column", shadowOpacity: 0.05}]}>
                                 <Text style={{fontSize: Width/27, fontWeight: '400'}}>유저 수</Text>
                                 <View style={{width: "100%", height: "25%", flexDirection: "row"}}>
                                     <Text style={{fontSize: Width/22, fontWeight: '500', color: "#538eff"}}>{renderUserItem?.length}</Text>
-                                    <Text style={{fontSize: Width/27, fontWeight: '400', marginTop: 2}}> / {renderItem?.title?.split("|//+**+//|")[2]}</Text>
+                                    <Text style={{fontSize: Width/27, fontWeight: '400', marginTop: 2}}> / {renderItem?.memberLimit}</Text>
                                 </View>
                                 <Text style={{fontSize: Width/27, fontWeight: '400'}}>유저 평군 도달률</Text>
-                                <View style={{width: "100%", height: "15%", alignItems: "flex-start", justifyContent: "space-around"}}>
+                                <View style={{width: "100%", height: Height/40, alignItems: "flex-start", justifyContent: "space-around"}}>
                                     <View style={{width: "100%", backgroundColor: "#e4e4e4", height: "100%", borderRadius: Width/22.5, overflow: 'hidden'}}>
                                         <View style={{width: `${isNaN(Number(userAvgGoal)) ? 0 : Number(userAvgGoal)}%`, height: "100%", backgroundColor: "rgba(83,142,255,0.64)", alignItems: 'flex-end', justifyContent: 'center'}}>
                                             <Text style={{marginRight: 4}}>{userAvgGoal}%</Text>
@@ -194,36 +189,38 @@ const ChallengeInfoScreen = () => {
                                             !Number(userAvgGoal) && <Text style={{fontSize: Width/35 ,marginLeft: Width/30, position: 'absolute', marginTop: Height/225}}>{0}%</Text>
                                         }
                                     </View>
-                                    {/*<Text style={{fontSize: 14, fontWeight: '600', opacity: 0.4}}>챌린지 시작 날짜 : {`${year}.${month}.${day}`}</Text>*/}
                                 </View>
                             </View>
                             <View style={[styles.itemInfoContainer, {height: Height/2.6, marginTop: Height/50, paddingHorizontal: 10}]}>
                                 <View>
                                     <FlatList scrollEnabled={false} data={renderUserItem} renderItem={({item}) => (
                                         <View style={{flexDirection: 'row', width: Width/1.25, alignItems: "center", justifyContent: "space-between", height: Height/14}}>
-                                            <Text style={{fontSize: Width/23.5, fontWeight: "600"}}>{item.name}</Text>
+                                            <Image src={"https://i.ibb.co/k26Ly0G/user-1.png"} style={{width: "12%", height: "62.5%", backgroundColor: "rgba(172,172,172,0.27)", borderRadius: Width/10, marginTop: 10}} />
                                             <View style={{width: "83%", height: "100%", alignItems: "flex-start", justifyContent: "space-around"}}>
-                                                <View style={{width: "100%", backgroundColor: "#e4e4e4", height: "37.5%", borderRadius: Width/35, overflow: 'hidden'}}>
-                                                    <View style={{width: `${(item.balance / Number(renderItem?.goalAmount) * 100)}%`, height: "100%", backgroundColor: "rgba(83,142,255,0.64)", alignItems: 'flex-end', justifyContent: 'center'}}>
-                                                        <Text style={{marginRight: 4}}>{Math.round(item.balance / Number(renderItem?.goalAmount) * 100)}%</Text>
+                                                <View style={{flexDirection: 'row', justifyContent: 'space-between', width: "97.5%", alignSelf: 'center', marginBottom: -17.5}}>
+                                                    <Text style={{fontSize: Width/29, fontWeight: "500"}}>{item.name}님</Text>
+                                                    <Text style={{fontSize: Width/30, fontWeight: "400"}}>{(Number(item?.balance) / Number(renderItem?.goalMoney) * 100)}%</Text>
+                                                </View>
+                                                <View style={{width: "100%", backgroundColor: "#e4e4e4", height: Height/40, borderRadius: Width/35, overflow: 'hidden'}}>
+                                                    <View style={{width: `${(Number(item?.balance) / Number(renderItem?.goalMoney) * 100)}%`, height: "100%", backgroundColor: "rgba(83,142,255,0.64)", alignItems: 'flex-end', justifyContent: 'center'}}>
+                                                        <Text style={{marginRight: 4}}>{Math.round(Number(item?.balance) / Number(renderItem?.goalMoney) * 100)}%</Text>
                                                     </View>
                                                     {
-                                                        item.balance == 0 && <Text style={{marginLeft: 9, position: 'absolute', marginTop: 3}}>{0}%</Text>
+                                                        item.balance == 0 && <Text style={{marginLeft: 13.5, position: 'absolute', marginTop: 4.5, fontSize: Width/35}}>{0}%</Text>
                                                     }
                                                 </View>
-                                                {/*<Text style={{fontSize: 14, fontWeight: '600', opacity: 0.4}}>챌린지 시작 날짜 : {`${year}.${month}.${day}`}</Text>*/}
                                             </View>
                                         </View>
                                     )}/>
                                 </View>
                             </View>
                             <TouchableOpacity onPress={() => {
-                                if(Number(renderItem?.title?.split("|//+**+//|")[2]) <= renderUserItem.length) {
+                                if(Number(renderItem?.memberLimit) <= renderUserItem?.length) {
                                     Alert.alert("경고", "챌린지의 정원이 다 찼습니다!")
                                 } else {
-                                    Welspy.challenge.joinChallenge(Number(renderItem?.idx))
+                                    Alert.alert(`${userInfo.name}님!`, "챌린지에 가입하시겠습니까?", [{text: "확인" ,onPress: ()=>{Welspy.challenge.joinChallenge(Number(renderItem?.roomId))}}])
                                 }
-                            }} style={[styles.bottomButton, {backgroundColor: Number(renderItem?.title?.split("|//+**+//|")[2]) > renderUserItem.length ? "#5892ff" : "#AAA"}]}>
+                            }} style={[styles.bottomButton, {backgroundColor: Number(renderItem?.memberLimit) > renderUserItem?.length ? "#5892ff" : "#AAA"}]}>
                                 <Text style={{fontSize: Width/20, fontWeight: '500', color : 'white'}}>챌린지 가입하기</Text>
                             </TouchableOpacity>
                         </View>
@@ -281,7 +278,7 @@ const styles = StyleSheet.create({
             height: 5,
         },
         shadowRadius: Width / 50,
-        shadowOpacity: 0.125,
+        shadowOpacity: 0.25,
     },
     memberLimitText: {
         backgroundColor: '#CCDEFB',
@@ -330,7 +327,7 @@ const styles = StyleSheet.create({
             height: 5,
         },
         shadowRadius: Width / 80,
-        shadowOpacity: 0.07,
+        shadowOpacity: 0.075,
         marginTop: 0,
     },
     bottomButton: {

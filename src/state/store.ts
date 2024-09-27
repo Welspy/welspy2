@@ -34,12 +34,20 @@ const store = {
         myChallengeList: [],
         renderChallenge: {},
         renderMyChallenge: [{},{}],
-        currentChallengeIdx: "",
+        currentChallengeIdx: 0,
         fullChallengeList: [],
         isReadyGetFull: false,
         userList: [],
         bankList: [],
-        
+        currentProduct: {
+            idx: 0,
+            name: "",
+            discount: 0,
+            discountedPrice: 0,
+            price: 0,
+            imageUrl: "",
+            description: "",
+        }
     })),
     challengeItemState : create<ChallengeItemStateType>(() => ({
         itemList: []

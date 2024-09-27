@@ -1,8 +1,5 @@
+import {ChallengeProductResponseType} from "../responseType/ChallengeProductResponseType.ts";
+
 export interface ChallengeItemStateType {
-    itemList: {
-        title: string,
-        price: number,
-        imageUrl: string,
-        detailUrl: string,
-    }[];
+    itemList: ChallengeProductResponseType[];
 }

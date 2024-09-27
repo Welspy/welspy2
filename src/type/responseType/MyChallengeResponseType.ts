@@ -1,9 +1,10 @@
 export interface MyChallengeResponseType {
+    idx?: number,
     roomId?: number,
+    email?: string,
     balance?: number,
     title?: string,
     description?: string,
-    imageUrl?: string,
-    category?: string,
-    goalAmount?: number,
+    goalMoney?: number,
+    productImageUrl?: string
 }

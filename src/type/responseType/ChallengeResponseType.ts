@@ -1,8 +1,12 @@
 export interface ChallengeResponseType {
-    idx?: number,
+    roomId?: number,
     title?: string,
     description?: string,
-    goalAmount?: number,
+    goalMoney?: number,
     imageUrl?: string,
-    category?: string
+    category?: "DIGITAL" | "TRAVEL" | "FASHION" | "TOYS" | "INTERIOR" | "ETC"
+    memberLimit?: number,
+    roomType?: string
+    productImageUrl?: string
+    productId?: number
 }

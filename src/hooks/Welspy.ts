@@ -32,7 +32,7 @@ const Welspy = {
     },
     challenge: {
         getMyChallenge: (page: number, size = 99) => {
-            useCreateHook('room/list/my', 'GET', {page, size}, true);
+            useCreateHook('room/my-room', 'GET', {page, size}, true);
         },
         getChallengeList: (page: number, size: number) => {
             useCreateHook('room/list', 'GET', {page, size}, true);
@@ -40,23 +40,26 @@ const Welspy = {
         searchChallenge: (page: number, size: number, title: string) => {
             useCreateHook('room/list/search', 'GET', {page, size, title}, true);
         },
-        createChallenge: ({title, description, goalAmount, imageUrl, category}: {title: string, description: string, goalAmount: number, imageUrl: string, category: string}) => {
+        createChallenge: ({title, description, goalMoney, imageUrl, category, productImageUrl, memberLimit, roomType, productId = 1}: {title: string, description: string, goalMoney: number, imageUrl: string, category: string, roomType: string, productImageUrl: string, memberLimit: number, productId?: number | null}) => {
             useCreateHook(
                 'room',
                 'POST',
-                {title, description, goalAmount, imageUrl, category},
-                true,
+                {title, description, goalMoney, imageUrl, category, productImageUrl, memberLimit, roomType, productId},
+                true
             );
         },
         getChallengeUserList: (page: number, size: number, roomId: number) => {
-            useCreateHook('room/user-list', 'GET', {page, size, roomId}, true);
+            useCreateHook('room/member', 'GET', {page, size, roomId}, true);
         },
         joinChallenge: (roomId : number) => {
             useCreateHook('room/join', 'POST', {roomId}, true);
         },
         getChallengeById: (roomId : number) => {
             useCreateHook('room', 'GET', {roomId}, true);
-        }
+        },
+        quitChallenge: (roomId : number) => {
+            useCreateHook('room', 'DELETE', {roomId}, false);
+        },
     },
     user: {
         getProfile: () => {
@@ -72,6 +75,17 @@ const Welspy = {
             useCreateHook('user', 'PATCH', {money}, true);
         },
     },
+    product: {
+        getProductList: (page: number, size: number) => {
+            useCreateHook('product/list', 'GET', {page, size}, true);
+        },
+        getProductById: (id: number) => {
+            useCreateHook('product', 'GET', {idx : id}, true);
+        },
+        searchProduct: (page: number, size: number, name: string) => {
+            useCreateHook('product/search', 'GET', {page, size, name}, true);
+        }
+    },
     bank: {
         getMyBank: () => {
             useCreateHook('bank', 'GET', {}, true);
@@ -79,8 +93,8 @@ const Welspy = {
         getBalance: (accountNumber: string) => {
             useCreateHook('bank/balance', 'GET', {accountNumber}, true);
         },
-        sendMoney: (targetAccountNumber: string, money: number) => {
-            useCreateHook('bank', 'POST', {targetAccountNumber, money}, true);
+        sendMoney: (targetAccountNumber: number, money: number) => {
+            useCreateHook('bank', 'PATCH', {roomId:targetAccountNumber, money}, true);
         },
         sendToBankMoney: (roomId: number, money: number) => {
             useCreateHook('bank/to-room', 'PATCH', {roomId, money}, true);
@@ -89,7 +103,7 @@ const Welspy = {
             useCreateHook('bank/log', 'POST', {money, bankType, name}, true);
         },
         getBankLog: () => {
-            useCreateHook('bank/log', 'GET', {size: 99, page: 1}, true);
+            useCreateHook('bank/log-my', 'GET', {size: 99, page: 1}, true);
         }
     },
 };

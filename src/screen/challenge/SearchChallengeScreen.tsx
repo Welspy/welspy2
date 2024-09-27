@@ -78,15 +78,19 @@ const SearchChallengeScreen = () => {
     useEffect(() => {
         if(queueSequence[0] == "room/list?GET"){
             if(isReadyGetFull) {
-                console.log(queueSequence);
-                console.log(hookQueue);
-                setFullList(hookQueue[0].response.data.data)
+                if(hookQueue[0].isSuccess) {
+                    console.log(queueSequence);
+                    console.log(hookQueue);
+                    setFullList(hookQueue[0].response?.data?.data);
+                } else {
+                    setFullList([]);
+                }
                 store.hookState.setState({hookQueue: [], queueSequence: []});
             }
         } else if(queueSequence[0] == "room/list/search?GET") {
             console.log(queueSequence);
             console.log(hookQueue);
-            setFullList(hookQueue[0].response.data.data)
+            setFullList(hookQueue[0].response?.data?.data)
             store.hookState.setState({hookQueue: [], queueSequence: []});
         }
     }, [queueSequence]);

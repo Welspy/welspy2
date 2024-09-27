@@ -16,6 +16,7 @@ import Welspy from '../../hooks/Welspy.ts';
 import {MainStackNavigationType} from '../../type/navigationType/MainStackNavigationType.ts';
 import {useEffect, useState} from 'react';
 import BannerFlatList from '../../component/BannerFlatList.tsx';
+import {ChallengeResponseType} from "../../type/responseType/ChallengeResponseType.ts";
 
 
 
@@ -24,16 +25,14 @@ const MainScreen = () => {
     const TabNavigation = useNavigation<NavigationProp<BottomTabNavigationType>>();
     const navigation = useNavigation<NavigationProp<MainStackNavigationType>>();
 
-    const {currentList, myChallengeList, isReadyGetFull, bankList} = store.challengeState(state => state)
+    const {currentList, myChallengeList, isReadyGetFull} = store.challengeState(state => state)
     const {userInfo, bankInfo} = store.userState(state => state)
 
-    const [renderBankList, setRenderBankList] = useState<number[]>([0]);
+    const [renderList, setRenderList] = useState<ChallengeResponseType[]>([])
 
     useEffect(() => {
-        if(bankList[0]) {
-          setRenderBankList(bankList?.map(item => item?.balance));
-        }
-    }, [bankList]);
+        setRenderList(currentList);
+    }, [currentList]);
 
     useEffect(() => {
         if (!isReadyGetFull){
@@ -67,16 +66,16 @@ const MainScreen = () => {
                         </View>
                     </View>
                     <View style={styles.bannerContainer}>
-                        <BannerFlatList images={["https://i.ibb.co/qY0L8HJ/Frame-1-2.jpg", "https://i.ibb.co/J72tVN7/Frame-3-1.jpg", "https://i.ibb.co/HrQ7Xfm/Frame-2-1.jpg"]}/>
+                        <BannerFlatList images={["https://www.lguplus.com/static/pc-contents/images/prdv/20240920-075744-468-FSLoefs4.png", "https://i.ibb.co/J72tVN7/Frame-3-1.jpg", "https://i.ibb.co/HrQ7Xfm/Frame-2-1.jpg"]}/>
                     </View>
                     <View style={styles.bankContainer}>
                         <Text style={styles.bankTitle}>{userInfo?.name != undefined && `${userInfo?.name}님`}</Text>
                         <View style={styles.bankRow}>
                             <View style={[styles.bankRow, {width: "60%", justifyContent: "flex-start"}]}>
-                                <Image src={"https://i.ibb.co/BP2TRGy/Frame-88.jpg"} style={{width: "18%", height: Height/26, marginRight: "6%", marginTop: "2.5%"}}/>
+                                <Image src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6cb5R90SsXu0vJHdbWsXI5s3Wig-74MgsLQ&s"} style={{width: "18%", height: Height/26, marginRight: "6%", marginTop: "8%"}}/>
                                 <View>
                                     <Text style={styles.bankText}>신한은행</Text>
-                                    <Text style={styles.balanceText}>{bankInfo.balance != undefined && `${bankInfo.balance - renderBankList.reduce((a,b) => a+b)}원`}</Text>
+                                    <Text style={styles.balanceText}>{bankInfo?.balance != undefined && `${(bankInfo?.balance)?.toLocaleString()}원`}</Text>
                                 </View>
                             </View>
                             <TouchableOpacity style={styles.bankButton} onPress={() => {navigation.navigate('mainSend')}}>
@@ -98,7 +97,7 @@ const MainScreen = () => {
                         모집중인 챌린지
                     </Text>
                     <View style={styles.challengeContainer}>
-                        <ChallengeList create={() => {navigation.navigate('mainCreate')}} styles={styles.challengeListContainer} renderItem={currentList}></ChallengeList>
+                        <ChallengeList create={() => {navigation.navigate('mainCreate')}} styles={styles.challengeListContainer} renderItem={renderList}></ChallengeList>
                     </View>
                 </View>
             </ScrollView>
@@ -109,7 +108,7 @@ const MainScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8F8F8',
+        backgroundColor: '#F2F4F6',
     },
     scrollContainer: {
         width: '100%',
@@ -121,8 +120,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         width: '90%',
-        height: "6%",
-        marginVertical: "3%",
+        height: "5%",
+        marginTop: "1%",
+        marginBottom: -15,
     },
     headerIcon: {
         height: "35%",
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.05,
         shadowColor: "#000",
         justifyContent: 'space-between',
-        height: "13.5%",
+        height: "13%",
         width: '90%',
     },
     bankTitle: {

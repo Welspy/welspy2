@@ -70,7 +70,7 @@ const BannerFlatList = ({ images } : { images : string[] }) => {
                         key={index}
                         style={[
                             styles.section,
-                            currentIndex === index && { color: "#ff731d" },
+                            currentIndex === index && { color: "#005cff" },
                         ]}
                     >.</Text>
                 ))}

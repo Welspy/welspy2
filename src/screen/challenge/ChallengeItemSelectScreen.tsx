@@ -4,25 +4,27 @@ import { WebView } from 'react-native-webview';
 import {Height, Width} from '../../config/global/dimensions.ts';
 import DismissButton from '../../component/DismissButton.tsx';
 import store from '../../state/store.ts';
+import {it} from "@jest/globals";
+import {ChallengeProductResponseType} from "../../type/responseType/ChallengeProductResponseType.ts";
 
-const ChallengeItemSelectScreen = ({data, close} : {data : any, close : any}) => {
-    const [selectedLink, setSelectedLink] = useState<{imageUrl : string, title: string, price: number, detailUrl: string}>();
+const ChallengeItemSelectScreen = ({data, close = () => {console.log("test")}} : {data : ChallengeProductResponseType[], close : any}) => {
+    const [selectedLink, setSelectedLink] = useState<ChallengeProductResponseType>();
 
-    useEffect(() => {
-        console.log(selectedLink);
-    }, [selectedLink]);
 
     const renderItem = ({ item } : {item : any}) => (
+        item == "" ? <View style={[styles.itemContainer, {backgroundColor: 'transparent'}]} key={item}>
+
+            </View> :
         <TouchableOpacity onPress={() => setSelectedLink(item)} style={styles.itemContainer}>
-            <Image src={item.imageUrl} style={styles.image} />
+            <Image src={item.imageUrl} style={styles.image} key={item.name}/>
             <View style={styles.textContainer}>
-                <Text numberOfLines={2} style={styles.title}>{item.title}</Text>
+                <Text numberOfLines={2} style={styles.title}>{item.name}</Text>
                 <Text style={styles.price}>{item.price}원</Text>
             </View>
         </TouchableOpacity>
     );
-    const loadingRenderItem = () => (
-        <View style={styles.itemContainer}>
+    const loadingRenderItem = (idx : number) => (
+        <View style={styles.itemContainer} key={idx} >
             <View style={[styles.image, {backgroundColor: "rgba(170,170,170,0.64)"}]} />
             <View style={styles.textContainer}>
                 <Text numberOfLines={2} style={styles.title}></Text>
@@ -38,9 +40,9 @@ const ChallengeItemSelectScreen = ({data, close} : {data : any, close : any}) =>
                 data[0] ? <>
                     {selectedLink ? (
                         <View style={styles.webViewContainer}>
-                            <WebView source={{uri : selectedLink.detailUrl}} style={styles.webview}/>
+                            <WebView source={{uri : selectedLink.description}} style={styles.webview}/>
                             <View style={styles.infoBottom} >
-                                <Text numberOfLines={3} style={styles.infoTitle}>{selectedLink.title}</Text>
+                                <Text numberOfLines={3} style={styles.infoTitle}>{selectedLink.name}</Text>
                                 <Text numberOfLines={3} style={styles.infoPrice}>{selectedLink.price} 원</Text>
                                 <View style={styles.row}>
                                     <TouchableOpacity onPress={() => {
@@ -65,7 +67,7 @@ const ChallengeItemSelectScreen = ({data, close} : {data : any, close : any}) =>
                             <Text style={styles.dismissText} onPress={close}>‹</Text>
                             <FlatList
                                 showsVerticalScrollIndicator={false}
-                                data={data}
+                                data={Boolean(data.length % 2) ? [...data, ""] : [data]}
                                 renderItem={renderItem}
                                 keyExtractor={(item) => item.title}
                                 numColumns={2}
@@ -78,8 +80,8 @@ const ChallengeItemSelectScreen = ({data, close} : {data : any, close : any}) =>
                     <Text style={styles.dismissText} onPress={close}>‹</Text>
                     <FlatList
                         showsVerticalScrollIndicator={false}
-                        data={["","","","","","","","","","","","","","","","","","","","","","","","","","","",]}
-                        renderItem={loadingRenderItem}
+                        data={["1","2","3","4","5","6","7","8","9","0","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27"]}
+                        renderItem={(idx) => loadingRenderItem(Number(idx))}
                         numColumns={2}
                         columnWrapperStyle={styles.row}
                         style={{width: "97%", alignSelf: 'center'}}
@@ -112,6 +114,7 @@ const styles = StyleSheet.create({
     image: {
         width: '100%',
         height: Height/8.5,
+        resizeMode: 'contain',
     },
     textContainer: {
         padding: 10,

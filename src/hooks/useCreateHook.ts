@@ -17,7 +17,7 @@ const useCustomFetch = async (
         },
     };
 
-    if (method === 'GET') {
+    if (method === 'GET' || method === 'DELETE') {
         config.params = params;
     } else {
         config.data = params;
