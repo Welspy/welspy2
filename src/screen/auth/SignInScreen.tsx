@@ -15,11 +15,19 @@ import {NavigationProp, useNavigation} from '@react-navigation/native';
 import {AuthStackNavigationType} from '../../type/navigationType/AuthStackNavigationType.ts';
 import store from '../../state/store.ts';
 import {RootStackNavigationType} from '../../type/navigationType/RootStackNavigationType.ts';
+import bottomTabNavigation from "../../navigation/bottomTab/BottomTabNavigation.tsx";
+import {BottomTabNavigationType} from "../../type/navigationType/BottomTabNavigationType.ts";
+import BottomTabNavigation from "../../navigation/bottomTab/BottomTabNavigation.tsx";
+import {BottomTabNavigationProp} from "@react-navigation/bottom-tabs";
 
 const SignInScreen = () => {
     const navigation = useNavigation<NavigationProp<AuthStackNavigationType>>();
     const rootNavigation = useNavigation<NavigationProp<RootStackNavigationType>>();
+    const tabNavigation = useNavigation<BottomTabNavigationProp<BottomTabNavigationType>>();
     const [email, setEmail] = useState('');
+    useEffect(() => {
+        console.log(tabNavigation.getState().routes)
+    }, [tabNavigation]);
 
     const [password, setPassword] = useState('');
 
@@ -34,9 +42,12 @@ const SignInScreen = () => {
                 store.authState.setState({accessToken : hookQueue[0].response?.data?.data?.accessToken, refreshToken : hookQueue[0].response?.data?.data?.refreshToken});
                 console.log(hookQueue[0].response?.data?.data?.accessToken)
                 Welspy.user.getProfile();
-                Welspy.bank.getMyBank();
                 Welspy.challenge.getMyChallenge(1);
-                !isReadyGetFull && Welspy.challenge.getChallengeList(1, 4);
+                Welspy.bank.getMyBank();
+                !isReadyGetFull && Welspy.challenge.getRecommendChallenge(1,4)
+                // Welspy.challenge.getChallengeList(1, 4);
+                // !isReadyGetFull && Welspy.challenge.getChallengeList(1, 4);
+                rootNavigation.navigate("rootTab")
             }
             store.hookState.setState({queueSequence: [], hookQueue: []});
         } else if (queueSequence[queueSequence.length -1] == "bank?GET") {
@@ -46,9 +57,12 @@ const SignInScreen = () => {
             store.userState.setState({userInfo: hookQueue[0]?.response?.data?.data});
             store.hookState.setState({queueSequence: [], hookQueue: []});
         } else if (queueSequence[queueSequence.length -1] == "room/my-room?GET") {
-            if(hookQueue[hookQueue.length-1].isSuccess){
-                store.challengeState.setState({myChallengeList: hookQueue[0].response?.data?.data});
-                console.log(hookQueue[0].response?.data?.data);
+            if(!isReadyGetFull) {
+              if (hookQueue[hookQueue.length - 1].isSuccess) {
+                store.challengeState.setState({
+                  myChallengeList: hookQueue[0].response?.data?.data,
+                });
+                // console.log(hookQueue[0].response?.data?.data);
                 // store.challengeState.setState({myChallengeList: [{
                 //         roomId: 9,
                 //         email: "",
@@ -58,11 +72,14 @@ const SignInScreen = () => {
                 //         goalMoney: 500000,
                 //         productImageUrl: "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQusJeGDK3PSEz_rQUQKlSTYI4eauPjbsk2C-8rBCzIry2cJPUipF1PJ9Zd-Ua2ZNq_Ckrdvf60ZBi6NXa3g3YX8KOAk99rq_wdz_G-KohRcrtFiuZozvtf&usqp=CAE",
                 //     }]});
+              }
+              store.hookState.setState({queueSequence: [], hookQueue: []});
             }
-            store.hookState.setState({queueSequence: [], hookQueue: []});
         } else if (queueSequence[queueSequence.length -1] == "room/list?GET") {
+            console.log("test")
             if(!isReadyGetFull) {
                 if(hookQueue[0].isSuccess) {
+                    console.log("testdfdfffdf \n")
                   store.challengeState.setState({
                     currentList: [...hookQueue[0].response?.data?.data, {}],
                   });
@@ -70,6 +87,7 @@ const SignInScreen = () => {
                         currentChallengeIdx: hookQueue[0].response?.data?.data?.length
                     });
                 } else {
+                    console.log("tesdafdfadfast")
                     store.challengeState.setState({
                         currentList: [{}],
                     });
@@ -79,7 +97,6 @@ const SignInScreen = () => {
                 }
                 store.hookState.setState({queueSequence: [], hookQueue: []});
             }
-            rootNavigation.navigate("rootTab")
         }
     }, [queueSequence]);
 
@@ -116,7 +133,7 @@ const SignInScreen = () => {
                 </TouchableOpacity>
             </View>
             </KeyboardAvoidingView>
-            <Button title={"바로 로그인"} onPress={() => {Welspy.auth.signIn({email : "test1@test", password : "1234"})}}/>
+            <Button title={"바로 로그인"} onPress={() => {Welspy.auth.signIn({email : "test15@test", password : "1234"});rootNavigation.navigate('rootTab')}}/>
             {/*<Button title={"테스트 로그인"} onPress={() => {Welspy.challenge.getChallengeList(1, 99)}}/>*/}
         </SafeAreaView>
     );

@@ -4,9 +4,10 @@ export interface ChallengeResponseType {
     description?: string,
     goalMoney?: number,
     imageUrl?: string,
-    category?: "DIGITAL" | "TRAVEL" | "FASHION" | "TOYS" | "INTERIOR" | "ETC"
+    category?: "DIGITAL" | "TRAVEL" | "FASHION" | "TOYS" | "INTERIOR" | "ETC",
     memberLimit?: number,
-    roomType?: string
-    productImageUrl?: string
-    productId?: number
+    roomType?: string,
+    productImageUrl?: string,
+    productId?: number,
+    isAi? : boolean,
 }

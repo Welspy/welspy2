@@ -259,7 +259,7 @@ const CreateChallengeScreen = () => {
                                                 height: 25,
                                             }}
                                             onPress={() => {
-                                                console.log('test');
+                                                // console.log('test');
                                                 store.challengeItemState.setState({itemList: []});
                                             }}>
                                             <Text style={{fontSize: 23, color: 'red'}}>⊗</Text>
@@ -631,7 +631,7 @@ const CreateChallengeScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8F8F8',
+        backgroundColor: '#f0f2f5',
     },
     itemInfoTitle: {
         fontSize: Width / 25,

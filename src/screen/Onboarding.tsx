@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import {AuthStackNavigationType} from '../type/navigationType/AuthStackNavigationType.ts';
 import {NavigationProp} from '@react-navigation/native';
+import {Height, Width} from "../config/global/dimensions.ts";
 const OnBoarding = ({navigation} : {navigation : NavigationProp<AuthStackNavigationType>}) => {
   return (
     <View style={styles.wrapper}>
@@ -25,8 +26,8 @@ const OnBoarding = ({navigation} : {navigation : NavigationProp<AuthStackNavigat
 
 const styles = StyleSheet.create({
   wrapper: {
-    width: 393,
-    height: 852,
+    width: Width,
+    height: Height,
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
@@ -36,6 +37,7 @@ const styles = StyleSheet.create({
     width: 146,
     height: 152,
     resizeMode: 'contain',
+    alignItems: 'center',
   },
   appTitle: {
     fontSize: 45,
@@ -43,6 +45,7 @@ const styles = StyleSheet.create({
     color: '#5892ff',
     marginTop: 20,
     marginBottom: 10,
+    alignItems: 'center',
   },
   loginBtn: {
     width: 333,
@@ -52,11 +55,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 32,
+
   },
   loginBtnText: {
     fontSize: 16,
     fontWeight: '400',
     color: 'white',
+    alignItems: 'center',
   },
   guideWrapper: {
     width: 328,
@@ -68,12 +73,14 @@ const styles = StyleSheet.create({
   guidePhrase1: {
     fontSize: 12,
     fontWeight: '600',
+    alignItems: 'center',
   },
   guidePhrase2: {
     fontSize: 12,
     fontWeight: '600',
     color: '#5892ff',
     marginLeft: 5,
+    alignItems: 'center',
   },
 });
 

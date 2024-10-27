@@ -1,10 +1,10 @@
-import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {Platform, Pressable, StyleSheet, Text, View} from 'react-native';
 import {Height, Width} from '../config/global/dimensions.ts';
 
 const DismissButton = ({onPress, style} : {onPress : any, style? : any}) => {
     return (
         <Pressable style={!style ? [styles.container] : style} onPress={onPress}>
-            <Text style={styles.dismissText}>‹</Text>
+            <Text onPress={onPress} style={styles.dismissText}>‹</Text>
         </Pressable>
     )
 }
@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     container: {
         width: Width / (100/88),
         alignSelf: 'center',
-        height: Height / 10.5,
+        height: Height / (Platform.OS == 'ios' ? 10 : 7),
         justifyContent: "flex-end",
     },
     dismissText: {

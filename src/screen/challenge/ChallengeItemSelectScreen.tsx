@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
         fontWeight: "200",
         marginLeft: "4%",
         marginBottom: "-2.5%",
+        color: "#000000",
     },
     itemContainer: {
         flex: 1,
@@ -122,6 +123,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 15,
         fontWeight: '500',
+        color: 'black'
     },
     price: {
         fontSize: 15,
@@ -164,6 +166,7 @@ const styles = StyleSheet.create({
     infoTitle: {
         fontSize: Width/21,
         fontWeight: '500',
+        color: 'black',
     },
     infoPrice: {
         fontSize: Width/23,

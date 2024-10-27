@@ -1,35 +1,61 @@
-import {create, GetState, SetState, StoreApi, UseBoundStore} from 'zustand';
-import {HookStateType} from '../type/storeType/HookStateType.ts';
-import {AuthStateType} from '../type/storeType/AuthStateType.ts';
-import {UserStateType} from '../type/storeType/UserStateType.ts';
-import {ChallengeStateType} from '../type/storeType/ChallengeStateType.ts';
-import {ChallengeItemStateType} from '../type/storeType/ChallengeItemStateType.ts';
-import {NavigationStateType} from '../type/storeType/NavigationStateType.ts';
+import { create, UseBoundStore, StoreApi } from 'zustand';
+import { persist } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { HookStateType } from '../type/storeType/HookStateType.ts';
+import { AuthStateType } from '../type/storeType/AuthStateType.ts';
+import { UserStateType } from '../type/storeType/UserStateType.ts';
+import { ChallengeStateType } from '../type/storeType/ChallengeStateType.ts';
+import { ChallengeItemStateType } from '../type/storeType/ChallengeItemStateType.ts';
+import { NavigationStateType } from '../type/storeType/NavigationStateType.ts';
 
 interface StoreType {
     hookState: UseBoundStore<StoreApi<HookStateType>>;
-    authState: UseBoundStore<StoreApi<AuthStateType>>
-    userState: UseBoundStore<StoreApi<UserStateType>>
-    challengeState: UseBoundStore<StoreApi<ChallengeStateType>>
-    challengeItemState: UseBoundStore<StoreApi<ChallengeItemStateType>>
-    navigationState: UseBoundStore<StoreApi<NavigationStateType>>
+    authState: UseBoundStore<StoreApi<AuthStateType>>;
+    userState: UseBoundStore<StoreApi<UserStateType>>;
+    challengeState: UseBoundStore<StoreApi<ChallengeStateType>>;
+    challengeItemState: UseBoundStore<StoreApi<ChallengeItemStateType>>;
+    navigationState: UseBoundStore<StoreApi<NavigationStateType>>;
 }
 
-const store = {
-    hookState : create<HookStateType>(() => ({
+const store: StoreType = {
+    hookState: create<HookStateType>(() => ({
         hookQueue: [],
         queueSequence: []
     })),
-    authState : create<AuthStateType>(() => ({
-        accessToken : "",
-        refreshToken: ""
-    })),
-    userState : create<UserStateType>(() => ({
+
+    authState: create<AuthStateType>()(
+        persist(
+            (set) => ({
+                accessToken: "",
+                refreshToken: "",
+                setAccessToken: async (token: string) => {
+                    set(() => ({ accessToken: token }));
+                },
+                setRefreshToken: async (token: string) => {
+                    set(() => ({ refreshToken: token }));
+                },
+                removeTokens: async () => {
+                    set(() => ({ accessToken: "", refreshToken: "" }));
+                },
+                isLoggedIn: async () => {
+                    const token = await AsyncStorage.getItem("accessToken");
+                    return !!token;
+                }
+            }),
+            {
+                name: "authState",
+                getStorage: () => AsyncStorage,
+            }
+        )
+    ),
+
+    userState: create<UserStateType>(() => ({
         userInfo: {},
         challengeInfo: [],
         bankInfo: {}
     })),
-    challengeState : create<ChallengeStateType>(() => ({
+
+    challengeState: create<ChallengeStateType>(() => ({
         currentList: [],
         myChallengeList: [],
         renderChallenge: {},
@@ -49,11 +75,24 @@ const store = {
             description: "",
         }
     })),
-    challengeItemState : create<ChallengeItemStateType>(() => ({
+
+    challengeItemState: create<ChallengeItemStateType>(() => ({
         itemList: []
     })),
-    navigationState : create<NavigationStateType>(() => ({
-        isBottomTabVisible: true
+
+    navigationState: create<NavigationStateType>(() => ({
+        isBottomTabVisible: true,
+        alarmState: {
+            challenge: 0,
+            main: 3,
+            user: 0,
+            allOf: 3,
+        },
+        settings: {
+            view: "DARK",
+            alarmVisible: true,
+        },
+        tabHistory: false
     }))
 }
 

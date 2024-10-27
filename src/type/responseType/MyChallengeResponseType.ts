@@ -7,4 +7,6 @@ export interface MyChallengeResponseType {
     description?: string,
     goalMoney?: number,
     productImageUrl?: string
+    productUrl?: string
+    imageUrl?: string
 }

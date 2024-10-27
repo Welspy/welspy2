@@ -1,19 +1,20 @@
-import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Image, Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {ChallengeResponseType} from '../../type/responseType/ChallengeResponseType.ts';
 import {Height, Width} from '../../config/global/dimensions.ts';
 import store from '../../state/store.ts';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 import {BottomTabNavigationType} from '../../type/navigationType/BottomTabNavigationType.ts';
+import {font} from "../../config/global/font.ts";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 export const ChallengeObject = ({item, create} : {item: ChallengeResponseType, create: any}) => {
 
     const category = {
-        "DIGITAL" : "https://i.ibb.co/DLCp14n/computer.png",
-        "TRAVEL" : "https://i.ibb.co/k2LW8v0/briefcase.png",
-        "FASHION" : "https://i.ibb.co/VHxdZNn/shirt.png",
-        "TOYS" : "https://i.ibb.co/brNgVbg/blue-car.png",
-        "INTERIOR" : "https://i.ibb.co/r5rmWFd/house-with-garden.png",
+        "DIGITAL" : "https://i.ibb.co/CQqxftX/Mobile-Phone.png",
+        "TRAVEL" : "https://i.ibb.co/j3WwhKM/Desert-Island.png",
+        "FASHION" : "https://i.ibb.co/vXsRpHK/Billed-Cap.png",
+        "TOYS" : "https://i.ibb.co/C6tJhqp/Badminton.png",
+        "INTERIOR" : "https://i.ibb.co/vdjN1Xt/Couch-and-Lamp.png",
         "ETC" : "https://i.ibb.co/RyYQTbS/dollar.png"
     }
 
@@ -35,10 +36,11 @@ export const ChallengeObject = ({item, create} : {item: ChallengeResponseType, c
     return (
         <TouchableOpacity style={styles.container} onPress={() => {
             if (item.roomId) {
-                console.log(myChallengeList.map((item) => {return item.roomId}))
+                // console.log(myChallengeList.map((item) => {return item.roomId}))
                 if (myChallengeList.map((item) => {return item.roomId}).includes(item.roomId)) {
                     store.challengeState.setState({renderMyChallenge: [item, myChallengeList.filter((e => e.roomId == item.roomId))[0]]})
                     tabNavigation.navigate('tabChallenge')
+                    store.navigationState.setState({tabHistory: true})
                     // console.log("test", item)
                     // console.log("test1", myChallengeList.filter((e => e.roomId == item.idx)))
                 } else {
@@ -61,28 +63,32 @@ export const ChallengeObject = ({item, create} : {item: ChallengeResponseType, c
                 }
             }
         }}>
+            {/*{item.isAi && <Text style={[font.smallFontGray, {position: 'absolute', right: 24, marginTop: 7}]}>Ai 추천</Text>}*/}
             {item.roomId?<>
                 <View style={styles.header}>
                     {/*eslint-disable-next-line @typescript-eslint/ban-ts-comment*/}
                     {/*@ts-ignore*/}
-                    <Image style={styles.challengeIcon} src={`${category[item?.category]}`}/>
+                    <Image style={[styles.challengeIcon, {height: Platform.OS == 'ios' ? "50%" : "47%"}]} src={`${category[item?.category]}`}/>
                 </View>
                 <View style={styles.content}>
                     <Text ellipsizeMode={"tail"} numberOfLines={1} style={styles.titleText}>{item.title?.split("|//+**+//|")[0]}</Text>
                     <Text ellipsizeMode={"tail"} numberOfLines={1} style={styles.descriptionText}>{item.description?.split("|//+**+//|")[0]}</Text>
-                    <Text style={styles.goalMoneyText}>{`${(item.goalMoney)?.toLocaleString()}원`}</Text>
+                    <View style={{flexDirection: 'row'}}>
+                        <Text style={[font.mediumFontBlack2, {marginTop: Platform.OS == 'ios' ? 0 : 0, fontWeight: Platform.OS == 'ios' ? "600" : "500", color: font.biggestFontBlue.color}]}>{`10%`} </Text>
+                        <Text style={[font.mediumFontBlack2, {marginTop: Platform.OS == 'ios' ? 0 : 0, fontWeight: Platform.OS == 'ios' ? "600" : "500"}]}>{`${(item.goalMoney)?.toLocaleString()}원`}</Text>
+                    </View>
                 </View>
                 <View style={styles.footer}>
                     <View style={styles.memberLimitText}>
                         {/*eslint-disable-next-line @typescript-eslint/ban-ts-comment*/}
                         {/*@ts-ignore*/}
-                        <Text style={{fontSize: Width/32, color: "#538eff"}}>{categoriesEnum[item.category]}</Text>
+                        <Text style={{fontSize: Width/32, color: "#538eff"}}>{item.currentMember}명 참여중</Text>
                     </View>
                 </View>
             </> : <>
                 {
                     navigation.getState()?.routeNames.includes("mainChallenge") ?
-                        <Text onPress={()=>{tabNavigation.navigate('tabSearch')}} style={styles.createText}>더 많은 챌린지 보러가기!</Text> : <Text onPress={() =>{create()}} style={styles.createText}>방 생성하기</Text>
+                        <Text onPress={()=>{tabNavigation.navigate('tabSearch')}} style={[font.mediumFontLightGray, {alignSelf: 'center'}]}>더 많은 챌린지 보러가기!</Text> : <Text onPress={() =>{create()}} style={[font.mediumFontLightGray, {alignSelf: 'center'}]}>검색된 챌린지가 없어요ㅠㅠ</Text>
                 }
             </>
             }
@@ -100,34 +106,30 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
         alignSelf: "center",
         justifyContent: "center",
-        marginBottom: Height / 90,
-        shadowOffset: {
-            width: Width/200,
-            height: Height/250,
-        },
-        shadowRadius: Width / 60,
-        shadowOpacity: 0.1,
+        marginBottom: Height / 100,
         shadowColor: "#000",
     },
     header: {
-        width: "20%",
+        width: "22%",
         height: "100%",
         alignItems: "center",
         justifyContent: "flex-start",
         paddingTop: Height / 50,
     },
     challengeIcon: {
-        width: "53%",
-        height: "46%",
-        marginTop: "4%",
+        width: "60%",
+        height: "50%",
+        marginTop: "33%",
         alignSelf: "center",
-        opacity: 0.7
+        position: "absolute",
+        opacity: 0.7,
+        pointerEvents: 'box-none'
     },
     content: {
         width: "42.5%",
         height: "100%",
         alignItems: "flex-start",
-        paddingTop: Height/40,
+        paddingTop: Platform.OS == 'ios' ? Height/40 : Height/46.5,
         paddingBottom: Height/80,
         paddingRight: Width/22,
         // justifyContent: "center",
@@ -155,20 +157,21 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     titleText: {
-        fontSize: Width / 30,
-        fontWeight: "600",
+        fontSize: font.mediumFontGray.fontSize,
+        fontWeight: font.mediumFontLightGray.fontWeight,
+        color: font.smallFontGray.color,
     },
     descriptionText: {
-        fontSize: Width / 32,
-        fontWeight: "600",
-        color: "#6c6c6c",
+        fontSize: font.smallFontLightGray.fontSize,
+        fontWeight: font.smallFontLightGray.fontWeight,
+        color: font.largeFontLightGray.color,
         marginTop: 1
     },
     goalMoneyText: {
         position: "absolute",
-        fontSize: Width / 30,
-        fontWeight: "400",
-        marginTop: 64,
-        color: "#999",
+        fontSize: Width / 28,
+        fontWeight: "600",
+        marginTop: 56,
+        color: "#6c6c6c",
     }
 })

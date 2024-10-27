@@ -1,76 +1,83 @@
 import React, { useEffect, useRef, useState } from "react";
-import {FlatList, Image, StyleSheet, View, Text, Pressable, Linking} from 'react-native';
+import { FlatList, Image, StyleSheet, View, Text, Pressable, Linking, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { Width, Height } from "../config/global/dimensions.ts";
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import store from '../state/store.ts';
 
-const BannerFlatList = ({ images } : { images : string[] }) => {
+const BannerFlatList = ({ images }: { images: string[] }) => {
     const flatListRef = useRef<FlatList>(null);
-    const [currentIndex, setCurrentIndex] = useState(0);
-
+    const [currentIndex, setCurrentIndex] = useState(1);
+    const bannerWidth = Width;
     const navigation = useNavigation();
+
+    // 무한 순환을 위해 이미지 리스트 앞뒤로 아이템을 추가
+    const loopImages = [images[images.length - 1], ...images, images[0]];
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+            flatListRef.current?.scrollToOffset({
+                offset: (currentIndex + 1) * bannerWidth,
+                animated: true,
+            });
+            setCurrentIndex(prevIndex => prevIndex + 1);
         }, 5000);
 
         return () => clearInterval(interval);
-    }, [images.length]);
+    }, [currentIndex]);
 
-    useEffect(() => {
-        if (flatListRef.current) {
-            if (currentIndex === images.length - 1) {
-                flatListRef.current.scrollToOffset({ animated: true, offset: currentIndex * Width / 1.125 });
-                setTimeout(() => {
-                    flatListRef.current?.scrollToOffset({ animated: false, offset: 0 });
-                    setCurrentIndex(0);
-                }, 500);
-            } else {
-                flatListRef.current.scrollToOffset({ animated: true, offset: currentIndex * Width / 1.125 });
-            }
+    const handleScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const offsetX = event.nativeEvent.contentOffset.x;
+        const newIndex = Math.round(offsetX / bannerWidth);
+
+        if (newIndex === loopImages.length - 1) {
+            flatListRef.current?.scrollToOffset({ animated: false, offset: bannerWidth });
+            setCurrentIndex(1);
+        } else if (newIndex === 0) {
+            flatListRef.current?.scrollToOffset({ animated: false, offset: (loopImages.length - 2) * bannerWidth });
+            setCurrentIndex(loopImages.length - 2);
+        } else {
+            setCurrentIndex(newIndex);
         }
-    }, [currentIndex, images.length, Width / 1.125]);
+    };
 
     return (
-        <View style={styles.bannerContainer}>
-            <FlatList
-                ref={flatListRef}
-                data={images}
-                showsHorizontalScrollIndicator={false}
-                horizontal={true}
-                pagingEnabled={true}
-                contentContainerStyle={{ height: "100%" }}
-                style={styles.bannerHeader}
-                renderItem={({ item, index }) => (
-                    <Pressable onPress={() => {
-                        switch (index) {
-                            case 0:
-                                //@ts-ignore
-                                store.challengeItemState.setState({itemList: [{title: "Apple iPhone 15 128GB 옐로", price: "₩1,090,000", imageUrl:  "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcR0Xo-f1jmaBHDx9vyoU9y_hz5woIuaK1hfBs-SObJFTlho-3rBZ6nInJwVvC74j0CXkkkMds1vE25u50MFaIWWWg8f5R_sUISKT8bVooDDYItcZabqgorq&usqp=CAE", detailUrl: "https://www.google.com/shopping/product/1772562870471691575?q=iPhone&prds=eto:13371518191653458544_0,pid:16649351467938767413,rsk:PC_6601648695432433635&sa=X&ved=0ahUKEwjEze65h8CIAxU3s1YBHeUJBmcQ8gIIqQcoAA",}]});
-                                //@ts-ignore
-                                navigation.navigate('mainCreate')
-                                break;
-                            case 1:
-                                //@ts-ignore
-                                navigation.navigate('tabChallenge')
-                                break;
-                            case 2:
-                                Linking.openURL("https://www.youtube.com/watch?v=MWnXIaIPGng")
-                        }
-                    }}>
-                    <Image style={styles.banner} source={{ uri: item }} />
-                    </Pressable>
-                )}
-                keyExtractor={(item, index) => index.toString()}
-            />
+        <View>
+            <View style={styles.bannerContainer}>
+                <FlatList
+                    ref={flatListRef}
+                    data={loopImages}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ height: "100%" }}
+                    onMomentumScrollEnd={handleScrollEnd}
+                    renderItem={({ item, index }) => (
+                        <Pressable style={styles.bannerHeader} onPress={() => {
+                            switch (index) {
+                                case 1: // 첫 번째 이미지로 이동한 경우
+                                    navigation.navigate("tabChallenge")
+                                    break;
+                                case 2:
+                                    navigation.navigate("tabChallenge")
+                                    break;
+                                default:
+                                    navigation.navigate("tabChallenge")
+                                    break;
+                            }
+                        }}>
+                            <Image style={styles.banner} source={{ uri: item }} />
+                        </Pressable>
+                    )}
+                    keyExtractor={(item, index) => index.toString()}
+                />
+            </View>
             <View style={styles.sectionHeader}>
-                {[...new Set(images)].map((_, index) => (
+                {images.map((_, index) => (
                     <Text
                         key={index}
                         style={[
                             styles.section,
-                            currentIndex === index && { color: "#005cff" },
+                            currentIndex === index + 1 && { color: "#005cff" },
                         ]}
                     >.</Text>
                 ))}
@@ -81,28 +88,34 @@ const BannerFlatList = ({ images } : { images : string[] }) => {
 
 const styles = StyleSheet.create({
     bannerContainer: {
-        alignItems: "center",
-        width: Width / 1.125,
-        height: Height / 7,
-        paddingHorizontal: Height / 70,
+        width: Width,
+        overflow: "hidden",
+        marginTop: Width / 20,
+        height: Height/9,
+        borderRadius: Width / 30,
     },
     bannerHeader: {
-        width: Width / 1.115,
-        height: "80%",
+        width: Width,
+        alignSelf: "center",
+        alignItems: "center",
+        height: "100%",
         marginTop: "7%",
-        borderRadius: Width / 25,
-        overflow: "hidden",
     },
     banner: {
-        width: Width / 1.1,
-        height: "135%",
+        width: Width/1.11,
+        height: "100%",
+        borderRadius: Width / 30,
+        marginRight: 38,
         marginTop: -15,
+        resizeMode: "cover",
     },
     sectionHeader: {
-        height: "16%",
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
+        position: 'absolute',
+        marginTop: Width / 3.33,
+        marginLeft: Width / 2.4,
     },
     section: {
         fontSize: Width / 14,

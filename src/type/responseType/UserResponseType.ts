@@ -4,4 +4,5 @@ export interface UserResponseType {
     phoneNumber?: string,
     password?: string,
     userRole?: string,
+    imageUrl?: string,
 }

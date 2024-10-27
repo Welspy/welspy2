@@ -23,6 +23,7 @@ const useCustomFetch = async (
         config.data = params;
     }
 
+    console.log("getThe", config, target);
 
     if (isAuth) {
         const {accessToken, refreshToken} = store.authState.getState()
@@ -31,11 +32,11 @@ const useCustomFetch = async (
     }
     await axios(config)
         .then((res) => {
-            // await console.log(target,': [RES] :',res)
+            // console.log(target,': [RES] :',res.data.data)
             store.hookState.setState((state) => ({hookQueue : [...state.hookQueue, {target, isSuccess: true, errorMessage: "", response: res,}], queueSequence: [...state.queueSequence, target+"?"+method]}))
         })
         .catch((err) => {
-            console.log(config.url,': [ERR] :',err.response)
+            // console.log(config.url,': [ERR] :',err.response)
             store.hookState.setState((state) => ({hookQueue : [...state.hookQueue, {target, isSuccess: false, errorMessage: err, response: "",}], queueSequence: [...state.queueSequence, target+"?"+method]}))
         })
 };

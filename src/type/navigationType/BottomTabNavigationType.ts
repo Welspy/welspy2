@@ -1,6 +1,7 @@
-export interface BottomTabNavigationType {
+export type BottomTabNavigationType = {
     tabSearch : undefined;
     tabChallenge : undefined;
     tabMain : undefined;
     tabProfile : undefined;
+    tabProduction : undefined;
 }

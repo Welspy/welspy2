@@ -38,7 +38,7 @@ const Welspy = {
             useCreateHook('room/list', 'GET', {page, size}, true);
         },
         searchChallenge: (page: number, size: number, title: string) => {
-            useCreateHook('room/list/search', 'GET', {page, size, title}, true);
+            useCreateHook('room/search', 'GET', {page, size, title}, true);
         },
         createChallenge: ({title, description, goalMoney, imageUrl, category, productImageUrl, memberLimit, roomType, productId = 1}: {title: string, description: string, goalMoney: number, imageUrl: string, category: string, roomType: string, productImageUrl: string, memberLimit: number, productId?: number | null}) => {
             useCreateHook(
@@ -58,8 +58,11 @@ const Welspy = {
             useCreateHook('room', 'GET', {roomId}, true);
         },
         quitChallenge: (roomId : number) => {
-            useCreateHook('room', 'DELETE', {roomId}, false);
+            useCreateHook('room', 'DELETE', {roomId}, true);
         },
+        getRecommendChallenge: (page: number, size: number) => {
+            useCreateHook('recommend', 'GET', {page, size}, true);
+        }
     },
     user: {
         getProfile: () => {

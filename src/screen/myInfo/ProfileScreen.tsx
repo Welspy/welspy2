@@ -1,15 +1,18 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {View, Text, Image, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView} from 'react-native';
-import {NavigationProp, useNavigation} from '@react-navigation/native';
+import {NavigationProp, useFocusEffect, useNavigation} from '@react-navigation/native';
 import Welspy from '../../hooks/Welspy.ts';
 import store from '../../state/store.ts';
 //@ts-ignore
 import BottomSheet from 'react-native-gesture-bottom-sheet';
-import {Height} from '../../config/global/dimensions.ts';
+import {Height, Width} from '../../config/global/dimensions.ts';
 import {BottomTabNavigationType} from '../../type/navigationType/BottomTabNavigationType.ts';
+import {font} from "../../config/global/font.ts";
+import {MyInfoStackNavigationType} from "../../type/navigationType/MyInfoStackNavigationType.ts";
+import {StackNavigationProp} from "@react-navigation/stack";
 
 const ProfileScreen = () => {
-    const navigate = useNavigation();
+    const navigate = useNavigation<StackNavigationProp<MyInfoStackNavigationType>>();
     const tabNavigator = useNavigation<NavigationProp<BottomTabNavigationType>>();
 
     const {userInfo, bankInfo} = store.userState(state => state)
@@ -23,16 +26,17 @@ const ProfileScreen = () => {
         bankType : string,
         createdDateTime : string}[]>([])
 
-    useEffect(() => {
-        Welspy.user.getProfile()
-        Welspy.bank.getMyBank()
-        Welspy.bank.getBankLog()
-    }, [navigate]);
+    useFocusEffect(
+        useCallback(() => {
+            Welspy.user.getProfile()
+            Welspy.bank.getMyBank()
+            Welspy.bank.getBankLog()
+        },[])
+    )
 
-
     useEffect(() => {
-        if(queueSequence[0] == "bank/log?GET") {
-            console.log(hookQueue[0].response.data.data)
+        if(queueSequence[0] == "bank/log-my?GET") {
+            // console.log(hookQueue[0].response.data.data)
             setRenderBankLog(hookQueue[0].response.data.data)
             store.hookState.setState({hookQueue: [], queueSequence: []});
         }
@@ -62,56 +66,52 @@ const ProfileScreen = () => {
                     )}
                 </ScrollView>
             </BottomSheet>
-            <View style={styles.profileWrapper}>
-                <View style={styles.profileContentWrapper}>
-                    <Image src={"https://i.ibb.co/k26Ly0G/user-1.png"} style={styles.profileImage} />
-                    <View style={styles.textWrapper}>
-                        <Text style={styles.profileName}>{userInfo.name}</Text>
-                        <Text style={styles.profileEmail}>{userInfo.email}</Text>
-                    </View>
-                </View>
-                <TouchableOpacity style={styles.editButton}>
-                    <Text style={styles.chargeButtonText}>수정</Text>
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.accountWrapper}>
-                <View style={styles.accountMainWrapper}>
-                    <View style={styles.accountContentWrapper}>
-                        <Image src={"https://i.ibb.co/BP2TRGy/Frame-88.jpg"} style={styles.accountImage} />
-                        <View style={styles.accountTextWrapper}>
-                            <Text style={styles.accountText}>{`${userInfo.name} 님의 계좌`}</Text>
-                            <Text style={styles.accountBalance}>{bankInfo.balance}</Text>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{width: Width, alignItems: 'center'}}>
+                <View style={styles.profileWrapper}>
+                    <View style={styles.profileContentWrapper}>
+                        <Image src={userInfo?.imageUrl} style={styles.profileImage} />
+                        <View style={styles.textWrapper}>
+                            <Text style={font.largeFontBlack}>{userInfo.name}</Text>
+                            <Text style={font.mediumFontLightGray}>{userInfo.email}</Text>
                         </View>
                     </View>
-                    <TouchableOpacity style={styles.chargeButton}>
-                        <Text style={styles.chargeButtonText}>충전</Text>
-                    </TouchableOpacity>
                 </View>
-            </View>
-
-            <Text style={styles.sectionTitle}>소비 내역</Text>
-            <ScrollView style={styles.listContentWrapper}>
-                {renderBankLog.length >= 2 ? (
-                    renderBankLog.slice(0, 3).map((item, idx) => (
-                        <View style={styles.listContentItem} key={idx}>
-                            <View style={styles.itemContentWrapper}>
-                                <Image src={"https://i.ibb.co/BP2TRGy/Frame-88.jpg"} style={styles.circle} />
-                                <View style={styles.itemTextWrapper}>
-                                    <Text style={styles.itemName}>{item.name}</Text>
-                                    <Text style={styles.itemMoney}>{item.money}</Text>
-                                </View>
+                <View style={styles.accountWrapper}>
+                    <View style={styles.accountMainWrapper}>
+                        <View style={styles.accountContentWrapper}>
+                            <Image src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6cb5R90SsXu0vJHdbWsXI5s3Wig-74MgsLQ&s"} style={{width: "22%", height: Height/22, marginRight: "6%", marginTop: "2%"}}/>
+                            <View style={styles.accountTextWrapper}>
+                                <Text style={font.mediumFontBlack}>{`${userInfo.name} 님의 계좌`}</Text>
+                                <Text style={font.largeFontBlack}>{bankInfo.balance?.toLocaleString()}원</Text>
                             </View>
                         </View>
-                    ))
-                ) : (
-                    <></>
-                )}
+                        <TouchableOpacity onPress={() => navigate.navigate('profileSend')} style={styles.chargeButton}>
+                            <Text style={styles.chargeButtonText}>결제</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                <Text style={[font.largeFontBlack, {alignSelf: 'flex-start', marginLeft: Width/(100/7), marginBottom: 15}]}>소비 내역</Text>
+                <ScrollView scrollEnabled={false} style={styles.listContentWrapper}>
+                    {renderBankLog.length >= 2 ? (
+                        renderBankLog.map((item, idx) => (
+                            <View style={styles.listContentItem} key={idx}>
+                                <View style={styles.itemContentWrapper}>
+                                    <Image src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6cb5R90SsXu0vJHdbWsXI5s3Wig-74MgsLQ&s"} style={{width: "8%", height: Height/22, marginRight: "-10%",marginLeft: 10, marginTop: "2%"}}/>
+                                    <View style={styles.itemTextWrapper}>
+                                        <Text style={[font.mediumFontGray, {marginBottom: 3}]}>{item.bankType == "SEND" ? "지출" : "수입"}</Text>
+                                        <Text style={[font.mediumFontBlack2, {fontWeight: "500"}]}>{item.money.toLocaleString()}원</Text>
+                                    </View>
+                                </View>
+                            </View>
+                        ))
+                    ) : (
+                        <Text></Text>
+                    )}
+                </ScrollView>
+                <View style={{height: 200}}></View>
             </ScrollView>
-            <TouchableOpacity style={styles.moreButton} onPress={() => bottomSheetRef.current.show()}>
-                <Text>더 보기</Text>
-            </TouchableOpacity>
-            <Text onPress={() => {tabNavigator.navigate('tabChallenge')}} style={{fontSize: 21, marginTop: 35, marginLeft: 30, alignSelf: 'flex-start', fontWeight: '500'}}>🔥 진행중인 챌린지                                  ❯</Text>
+            {/*<Text onPress={() => {tabNavigator.navigate('tabChallenge')}}style={[font.largeFontBlack, {alignSelf: 'flex-start', marginLeft: Width/(100/5), marginTop: 30}]} >🔥 진행중인 챌린지                                  ❯</Text>*/}
         </SafeAreaView>
     );
 };
@@ -123,21 +123,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     profileWrapper: {
-        width: 315,
+        width: Width/(100/90),
         height: 60,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: 80,
-        marginBottom: 15,
+        marginTop: 70,
     },
     profileContentWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     profileImage: {
-        width: 45,
-        height: 45,
+        width: 50,
+        height: 50,
         borderRadius: 40,
         backgroundColor: 'rgba(220,220,220,0.63)',
     },
@@ -160,20 +159,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     accountWrapper: {
-        width: 345,
+        width: Width/(100/90),
         height: 120,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: '#ffffff',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
+        shadowOpacity: 0.09,
+        shadowRadius: 6,
         borderRadius: 20,
         marginBottom: 50,
     },
     accountMainWrapper: {
-        width: 290,
+        width: 300,
         height: 70,
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -213,8 +212,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     listContentWrapper: {
-        width: 333,
-        maxHeight: 220,
+        width: Width/(100/88),
     },
     listContentItem: {
         width: 333,
@@ -224,7 +222,8 @@ const styles = StyleSheet.create({
     },
     itemContentWrapper: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        width: '100%',
+        justifyContent: 'flex-start',
         alignItems: 'center',
     },
     circle: {
@@ -234,7 +233,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#d9d9d9',
     },
     itemTextWrapper: {
-        marginLeft: 10,
+        marginLeft: 70,
     },
     itemName: {
         fontSize: 16,
